@@ -1,0 +1,21 @@
+[Unit]
+Description=Restricted Podman API proxy
+Requires=podman.socket
+After=podman.socket
+
+[Container]
+ContainerName=docker-socket-proxy
+Image=docker.io/tecnativa/docker-socket-proxy:latest
+Pull=newer
+PublishPort=127.0.0.1:58857:2375
+Environment=CONTAINERS=1
+Environment=INFO=1
+Environment=POST=0
+Volume=/run/user/1000/podman/podman.sock:/var/run/docker.sock:ro
+Ulimit=nofile=16384:16384
+
+[Service]
+TimeoutStartSec=15min
+
+[Install]
+WantedBy=default.target

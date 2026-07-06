@@ -1,0 +1,52 @@
+hostname: vps1
+base_domain: ebra.dev
+public_ipv4: 152.53.167.145
+public_ipv6: "2a0a:4cc0:2000:9c0b::1"
+ssh_authorized_key: "ssh-ed25519 CHANGE_ME"
+containers_git_repo: https://example.com/CHANGE_ME/containers.git
+
+headscale_domain: ebra.devices
+headscale_ipv4_prefix: 100.64.0.0/24
+tailnet_ipv4: 100.64.0.2
+
+headscale_oidc_client_id: CHANGE_ME
+headscale_oidc_client_secret: CHANGE_ME
+tinyauth_oidc_client_id: CHANGE_ME
+tinyauth_oidc_client_secret: CHANGE_ME
+tuwunel_oidc_client_id: CHANGE_ME
+tuwunel_oidc_client_secret: CHANGE_ME
+
+cloudflare_api_token: CHANGE_ME
+csv_auth_token: CHANGE_ME
+matrix_sender_auth_token: CHANGE_ME
+croc_password: CHANGE_ME
+glance_secret_token: CHANGE_ME
+
+headplane_cookie_secret: CHANGE_ME
+headplane_pre_authkey: CHANGE_ME
+headplane_api_key: CHANGE_ME
+
+matrix_username: CHANGE_ME
+matrix_password: CHANGE_ME
+matrix_recovery_key: "CHANGE_ME"
+
+pocketid_encryption_key: CHANGE_ME
+rybbit_better_auth_secret: CHANGE_ME
+tailscale_auth_key: CHANGE_ME
+
+tinyauth_admin_username: ebrahim
+tinyauth_admin_email: CHANGE_ME
+tinyauth_admin_password_hash: 'CHANGE_ME'
+tinyauth_admin_totp_hash: CHANGE_ME
+tinyauth_guest_password_hash: 'CHANGE_ME'
+
+livekit_key: CHANGE_ME
+livekit_secret: CHANGE_ME
+turn_secret: CHANGE_ME
+
+vaultwarden_admin_token: CHANGE_ME
+smtp_username: CHANGE_ME
+smtp_password: CHANGE_ME
+smtp_from: CHANGE_ME
+vaultwarden_push_installation_id: CHANGE_ME
+vaultwarden_push_installation_key: CHANGE_ME

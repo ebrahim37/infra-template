@@ -1,0 +1,16 @@
+[Unit]
+Description=Tuwunel LiveKit server
+
+[Container]
+ContainerName=tuwunel-livekit
+Image=docker.io/livekit/livekit-server
+Pull=newer
+Network=host
+Volume=./livekit.yaml:/etc/livekit.yaml:ro,Z
+Exec=--config /etc/livekit.yaml
+
+[Service]
+TimeoutStartSec=15min
+
+[Install]
+WantedBy=default.target

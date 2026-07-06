@@ -1,0 +1,27 @@
+[Unit]
+Description=Headscale control server
+Wants=pocketid.service
+After=pocketid.service
+
+[Container]
+ContainerName=headscale
+Image=docker.io/headscale/headscale:v0.28
+Pull=newer
+ReadOnly=true
+Tmpfs=/var/run/headscale
+AddHost=auth.{{ base_domain }}:host-gateway
+PublishPort=127.0.0.1:54624:8080
+PublishPort=127.0.0.1:52359:50443
+PublishPort=3480:3480/udp
+Volume=./headscale.yaml:/etc/headscale/config.yaml:z
+Volume=./dns_records.json:/etc/headscale/dns_records.json:z
+Volume=/home/core/containers-git/vps1/volumes/headscale-data:/var/lib/headscale:z
+Label=me.tale.headplane.target=headscale
+Exec=serve
+
+[Service]
+TimeoutStartSec=15min
+ExecStartPre=/usr/bin/mkdir -p /home/core/containers-git/vps1/volumes/headscale-data
+
+[Install]
+WantedBy=default.target

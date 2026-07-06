@@ -1,0 +1,29 @@
+[Unit]
+Description=Vaultwarden
+
+[Container]
+ContainerName=vaultwarden
+Image=docker.io/vaultwarden/server:alpine
+Pull=newer
+PublishPort=127.0.0.1:62297:80
+Environment="DOMAIN=https://vaultwarden.{{ base_domain }}"
+Environment="ADMIN_TOKEN={{ vaultwarden_admin_token }}"
+Environment=SMTP_HOST=smtp.gmail.com
+Environment=SMTP_PORT=587
+Environment=SMTP_SECURITY=starttls
+Environment="SMTP_FROM={{ smtp_from }}"
+Environment="SMTP_USERNAME={{ smtp_username }}"
+Environment="SMTP_PASSWORD={{ smtp_password }}"
+Environment=SIGNUPS_ALLOWED=false
+Environment=PUSH_ENABLED=true
+Environment="PUSH_INSTALLATION_ID={{ vaultwarden_push_installation_id }}"
+Environment="PUSH_INSTALLATION_KEY={{ vaultwarden_push_installation_key }}"
+Environment=SHOW_PASSWORD_HINT=false
+Volume=/home/core/containers-git/vps1/volumes/vaultwarden-data:/data:Z
+
+[Service]
+TimeoutStartSec=15min
+ExecStartPre=/usr/bin/mkdir -p /home/core/containers-git/vps1/volumes/vaultwarden-data
+
+[Install]
+WantedBy=default.target

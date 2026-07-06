@@ -1,0 +1,107 @@
+{
+  "ignition": {
+    "version": "3.6.0"
+  },
+  "passwd": {
+    "users": [
+      {
+        "name": "core",
+        "sshAuthorizedKeys": [
+          "ssh-ed25519 CHANGE_ME"
+        ]
+      }
+    ]
+  },
+  "storage": {
+    "files": [
+      {
+        "path": "/etc/hostname",
+        "contents": {
+          "compression": "",
+          "source": "data:,vps1"
+        },
+        "mode": 420
+      },
+      {
+        "path": "/etc/hosts",
+        "contents": {
+          "compression": "",
+          "source": "data:;base64,MTI3LjAuMC4xICAgICAgICBsb2NhbGhvc3QKOjoxICAgICAgICAgICAgICBsb2NhbGhvc3QKMTUyLjUzLjE2Ny4xNDUgICB2cHMxLmVicmEuZGV2Cg=="
+        },
+        "mode": 420
+      },
+      {
+        "path": "/etc/sysctl.d/90-containers.conf",
+        "contents": {
+          "compression": "",
+          "source": "data:,net.ipv4.ip_forward%20%3D%201%0Anet.ipv6.conf.all.forwarding%20%3D%201%0Anet.ipv4.ip_unprivileged_port_start%20%3D%2053%0A"
+        },
+        "mode": 420
+      },
+      {
+        "path": "/etc/systemd/zram-generator.conf",
+        "contents": {
+          "compression": "",
+          "source": "data:;base64,IyB0aGlzIGNvbmZpZyBmaWxlIGVuYWJsZXMgYSAvZGV2L3pyYW0wIGRldmljZSB3aXRoIHRoZSBkZWZhdWx0IHNldHRpbmdzClt6cmFtMF0K"
+        },
+        "mode": 420
+      },
+      {
+        "path": "/etc/profile.d/systemd-pager.sh",
+        "contents": {
+          "compression": "",
+          "source": "data:,export%20SYSTEMD_PAGER%3Dcat%0A"
+        },
+        "mode": 420
+      },
+      {
+        "path": "/etc/subuid",
+        "contents": {
+          "compression": "",
+          "source": "data:,core%3A100000%3A65536%0A"
+        },
+        "mode": 420
+      },
+      {
+        "path": "/etc/subgid",
+        "contents": {
+          "compression": "",
+          "source": "data:,core%3A100000%3A65536%0A"
+        },
+        "mode": 420
+      },
+      {
+        "path": "/var/lib/systemd/linger/core",
+        "mode": 420
+      }
+    ],
+    "links": [
+      {
+        "path": "/etc/containers/systemd/users/1000",
+        "target": "/var/home/core/containers-git/vps1/services-dist"
+      },
+      {
+        "path": "/etc/containers/systemd/tailscale-client.container",
+        "target": "/var/home/core/containers-git/vps1/services-dist/tailscale-client/tailscale-client.container.root"
+      }
+    ]
+  },
+  "systemd": {
+    "units": [
+      {
+        "contents": "[Unit]\nDescription=Layer host packages with rpm-ostree\nWants=network-online.target\nAfter=network-online.target\nBefore=zincati.service\nConditionPathExists=!/var/lib/%N.stamp\n\n[Service]\nType=oneshot\nRemainAfterExit=yes\nExecStart=/usr/bin/rpm-ostree install -y --allow-inactive qemu-guest-agent git-core\nExecStart=/bin/touch /var/lib/%N.stamp\nExecStart=/bin/systemctl --no-block reboot\n\n[Install]\nWantedBy=multi-user.target\n",
+        "enabled": true,
+        "name": "install-host-packages.service"
+      },
+      {
+        "enabled": true,
+        "name": "qemu-guest-agent.service"
+      },
+      {
+        "contents": "[Unit]\nDescription=Clone containers git repo for core user\nWants=network-online.target\nAfter=network-online.target install-host-packages.service\nConditionPathExists=/usr/bin/git\nConditionPathExists=!/var/home/core/containers-git/.git\n\n[Service]\nType=oneshot\nUser=core\nGroup=core\nWorkingDirectory=/var/home/core\nExecStart=/usr/bin/git clone \"https://example.com/CHANGE_ME/containers.git\" /var/home/core/containers-git\n\n[Install]\nWantedBy=multi-user.target\n",
+        "enabled": true,
+        "name": "clone-containers-repo.service"
+      }
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+[Unit]
+Description=Rybbit ClickHouse
+
+[Container]
+ContainerName=rybbit-clickhouse
+Image=docker.io/clickhouse/clickhouse-server:25.4.2
+Pull=newer
+PublishPort=127.0.0.1:54679:8123
+EnvironmentFile=./env/clickhouse.env
+Volume=/home/core/containers-git/vps1/volumes/rybbit-clickhouse:/var/lib/clickhouse:Z
+Volume=./clickhouse-config:/etc/clickhouse-server/config.d:ro,Z
+
+[Service]
+TimeoutStartSec=15min
+ExecStartPre=/usr/bin/mkdir -p /home/core/containers-git/vps1/volumes/rybbit-clickhouse
+
+[Install]
+WantedBy=default.target

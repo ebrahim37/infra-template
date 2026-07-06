@@ -1,0 +1,22 @@
+[Unit]
+Description=Tuwunel TURN server
+Wants=caddy.service
+After=caddy.service
+
+[Container]
+ContainerName=tuwunel-coturn
+Image=docker.io/coturn/coturn:alpine
+Pull=newer
+Environment=DETECT_EXTERNAL_IP=yes
+PublishPort=3479:3479/udp
+PublishPort=3479:3479/tcp
+PublishPort=5350:5350/tcp
+PublishPort=13000-15999:13000-15999/udp
+Volume=./turnserver.conf:/etc/coturn/turnserver.conf:ro,Z
+Volume=/home/core/containers-git/vps1/volumes/caddy-data/caddy/certificates/acme-v02.api.letsencrypt.org-directory/wildcard_.{{ base_domain }}:/etc/coturn/certs:ro,z
+
+[Service]
+TimeoutStartSec=15min
+
+[Install]
+WantedBy=default.target

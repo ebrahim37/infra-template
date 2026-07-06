@@ -1,0 +1,21 @@
+[Unit]
+Description=Tuwunel Matrix homeserver
+Wants=pocketid.service
+After=pocketid.service
+
+[Container]
+ContainerName=tuwunel
+Image=docker.io/jevolk/tuwunel:main-release-all-x86_64-v3-linux-gnu
+Pull=newer
+AddHost=auth.{{ base_domain }}:host-gateway
+PublishPort=127.0.0.1:64565:8008
+Environment=TUWUNEL_CONFIG=/etc/tuwunel/tuwunel.toml
+Volume=/home/core/containers-git/vps1/volumes/tuwunel-data:/var/lib/tuwunel:Z
+Volume=./tuwunel.toml:/etc/tuwunel/tuwunel.toml:ro,Z
+
+[Service]
+TimeoutStartSec=15min
+ExecStartPre=/usr/bin/mkdir -p /home/core/containers-git/vps1/volumes/tuwunel-data
+
+[Install]
+WantedBy=default.target

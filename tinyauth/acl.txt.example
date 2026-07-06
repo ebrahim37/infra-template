@@ -1,6 +1,0 @@
-tinyauth.apps.cash-api.oauth.whitelist=xxxxxxxxxxxx@gmail.com
-tinyauth.apps.cash-api.users.allow=ebrahim
-tinyauth.apps.cf-api.oauth.whitelist=xxxxxxxxxxxx@gmail.com
-tinyauth.apps.cf-api.users.allow=ebrahim
-tinyauth.apps.glance.oauth.whitelist=xxxxxxxxxxxx@gmail.com
-tinyauth.apps.glance.users.allow=ebrahim

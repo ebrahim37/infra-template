@@ -1,0 +1,18 @@
+[Unit]
+Description=Rybbit web client
+Requires=rybbit-backend.service
+After=rybbit-backend.service
+
+[Container]
+ContainerName=rybbit-client
+Image=ghcr.io/rybbit-io/rybbit-client:latest
+Pull=newer
+PublishPort=127.0.0.1:52363:3002
+EnvironmentFile=./env/client.env
+Environment=NODE_ENV=production
+
+[Service]
+TimeoutStartSec=15min
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,25 @@
+[Unit]
+Description=Caddy reverse proxy
+
+[Container]
+ContainerName=caddy
+Image=ghcr.io/caddy-dns/cloudflare:latest
+Network=pasta:--map-host-loopback,169.254.1.3
+AddHost=host.containers.internal:169.254.1.3
+PublishPort=443:443
+PublishPort=443:443/udp
+Environment="BASE_DOMAIN={{ base_domain }}"
+Environment="CF_API_TOKEN={{ cloudflare_api_token }}"
+Environment="CSV_AUTH_TOKEN={{ csv_auth_token }}"
+Environment="MATRIX_SENDER_AUTH_TOKEN={{ matrix_sender_auth_token }}"
+Volume=./conf:/etc/caddy:Z
+Volume=/home/core/containers-git/vps1/volumes/caddy-data:/data:z
+Volume=/home/core/containers-git/vps1/volumes/caddy-logs:/var/log:Z
+
+[Service]
+TimeoutStartSec=15min
+ExecStartPre=/usr/bin/mkdir -p /home/core/containers-git/vps1/volumes/caddy-data
+ExecStartPre=/usr/bin/mkdir -p /home/core/containers-git/vps1/volumes/caddy-logs
+
+[Install]
+WantedBy=default.target

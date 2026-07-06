@@ -1,0 +1,19 @@
+[Unit]
+Description=Pocket ID
+
+[Container]
+ContainerName=pocketid
+Image=ghcr.io/pocket-id/pocket-id:v2
+Pull=newer
+PublishPort=127.0.0.1:18467:1411
+Environment=APP_URL=https://auth.{{ base_domain }}
+Environment=ENCRYPTION_KEY={{ pocketid_encryption_key }}
+Environment=TRUST_PROXY=true
+Volume=/home/core/containers-git/vps1/volumes/pocketid-data:/app/data:Z
+
+[Service]
+TimeoutStartSec=15min
+ExecStartPre=/usr/bin/mkdir -p /home/core/containers-git/vps1/volumes/pocketid-data
+
+[Install]
+WantedBy=default.target

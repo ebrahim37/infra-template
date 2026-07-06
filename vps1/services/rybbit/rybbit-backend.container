@@ -1,0 +1,27 @@
+[Unit]
+Description=Rybbit backend
+Requires=rybbit-clickhouse.service rybbit-postgres.service
+After=rybbit-clickhouse.service rybbit-postgres.service
+
+[Container]
+ContainerName=rybbit-backend
+Image=ghcr.io/rybbit-io/rybbit-backend:latest
+Pull=newer
+Network=pasta:--map-host-loopback,169.254.1.3
+AddHost=host.containers.internal:169.254.1.3
+PublishPort=127.0.0.1:55401:3001
+Environment=NODE_ENV=production
+EnvironmentFile=./env/clickhouse.env
+EnvironmentFile=./env/postgres.env
+EnvironmentFile=./env/backend.env
+Environment=CLICKHOUSE_HOST=http://host.containers.internal:54679
+Environment=POSTGRES_HOST=host.containers.internal
+Environment=POSTGRES_PORT=52721
+
+[Service]
+TimeoutStartSec=15min
+ExecStartPre=/usr/bin/bash -c "until (echo >/dev/tcp/127.0.0.1/54679) 2>/dev/null; do sleep 1; done"
+ExecStartPre=/usr/bin/bash -c "until (echo >/dev/tcp/127.0.0.1/52721) 2>/dev/null; do sleep 1; done"
+
+[Install]
+WantedBy=default.target

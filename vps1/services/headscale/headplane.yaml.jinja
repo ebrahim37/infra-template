@@ -1,0 +1,39 @@
+server:
+  host: "0.0.0.0"
+  port: 3000
+  base_url: "https://headscale.{{ base_domain }}"
+  cookie_secret: "{{ headplane_cookie_secret }}"
+  cookie_secure: true
+  cookie_max_age: 86400 # 1 day
+  cookie_domain: "headscale.{{ base_domain }}"
+  data_path: "/var/lib/headplane"
+headscale:
+  url: "https://headscale.{{ base_domain }}"
+  public_url: "https://headscale.{{ base_domain }}"
+  config_path: "/etc/headscale/config.yaml"
+  config_strict: true
+  dns_records_path: "/etc/headscale/dns_records.json"
+  api_key: "{{ headplane_api_key }}"
+integration:
+  agent:
+    enabled: true
+    pre_authkey: "{{ headplane_pre_authkey }}"
+  docker:
+    enabled: true
+    container_label: "me.tale.headplane.target=headscale"
+    socket: "tcp://host.containers.internal:58857"
+  kubernetes:
+    enabled: false
+    validate_manifest: true
+    pod_name: "headscale"
+  proc:
+    enabled: false
+oidc:
+  issuer: "https://auth.{{ base_domain }}"
+  headscale_api_key: "{{ headplane_api_key }}"
+  token_endpoint_auth_method: "client_secret_post"
+  client_id: "{{ headscale_oidc_client_id }}"
+  client_secret: "{{ headscale_oidc_client_secret }}"
+  use_pkce: true
+  disable_api_key_login: true
+  scope: "openid email profile"

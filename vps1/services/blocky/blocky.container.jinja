@@ -1,0 +1,26 @@
+[Unit]
+Description=Blocky DNS server
+Wants=blocky-tailscale.service
+After=blocky-tailscale.service
+
+[Container]
+ContainerName=blocky
+Image=docker.io/spx01/blocky
+Pull=newer
+Network=pasta:--map-host-loopback,169.254.1.3
+AddHost=host.containers.internal:169.254.1.3
+PublishPort={{ tailnet_ipv4 }}:53:53
+PublishPort={{ tailnet_ipv4 }}:53:53/udp
+Volume=./additional_allow.txt:/app/additional_allow.txt:ro,Z
+Volume=./additional_deny.txt:/app/additional_deny.txt:ro,Z
+Volume=./config.yml:/app/config.yml:ro,Z
+Volume=/home/core/containers-git/vps1/volumes/blocky-logs:/logs:U,Z
+
+[Service]
+TimeoutStartSec=15min
+ExecStartPre=/usr/bin/mkdir -p /home/core/containers-git/vps1/volumes/blocky-logs
+ExecStartPre=/bin/sh -c "until /usr/sbin/ip -4 addr show dev tailscale0 2>/dev/null | /usr/bin/grep -q '100\\.64\\.0\\.2/'; do /usr/bin/sleep 1; done"
+ExecStartPre=/usr/bin/sleep 1
+
+[Install]
+WantedBy=default.target

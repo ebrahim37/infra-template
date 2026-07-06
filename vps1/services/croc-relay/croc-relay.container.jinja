@@ -1,0 +1,16 @@
+[Unit]
+Description=croc relay
+
+[Container]
+ContainerName=croc-relay
+Image=docker.io/schollz/croc
+Pull=newer
+PublishPort=53889-53890:53889-53890
+Environment=CROC_PORTS=53889,53890
+Environment="CROC_PASS={{ croc_password }}"
+
+[Service]
+TimeoutStartSec=15min
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,19 @@
+[Unit]
+Description=Wealthgate backend
+
+[Container]
+ContainerName=wg-back
+Image=docker.io/oven/bun:alpine
+Pull=newer
+PublishPort=127.0.0.1:15647:15647
+Volume=/home/core/projs/wg/back:/src:ro,Z
+Volume=/home/core/containers-git/vps1/volumes/projs-wg-node:/app/node_modules:Z
+WorkingDir=/app
+Exec=sh -lc "cp -a /src/. /app && bun install && bun run start"
+
+[Service]
+TimeoutStartSec=15min
+ExecStartPre=/usr/bin/mkdir -p /home/core/containers-git/vps1/volumes/projs-wg-node
+
+[Install]
+WantedBy=default.target
