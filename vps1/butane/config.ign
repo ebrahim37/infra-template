@@ -82,11 +82,11 @@
     "links": [
       {
         "path": "/etc/containers/systemd/users/1000",
-        "target": "/var/home/core/containers-git/vps1/services-dist"
+        "target": "/var/home/core/containers-git/vps1/services-dist/rootless"
       },
       {
         "path": "/etc/containers/systemd/tailscale-client.container",
-        "target": "/var/home/core/containers-git/vps1/services-dist/tailscale-client/tailscale-client.container.root"
+        "target": "/var/home/core/containers-git/vps1/services-dist/root/tailscale-client/tailscale-client.container"
       }
     ]
   },
