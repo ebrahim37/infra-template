@@ -25,7 +25,6 @@ matrix_sender_auth_token: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 croc_password: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 glance_secret_token: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-# reconf headscale/plane
 headplane_cookie_secret: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 headplane_pre_authkey: hskey-auth-...
 headplane_api_key: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx

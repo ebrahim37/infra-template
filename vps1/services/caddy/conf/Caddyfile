@@ -1,7 +1,3 @@
-{
-	auto_https disable_redirects
-}
-
 (protected) {
 	route {args[0]} {
 		forward_auth host.containers.internal:19491 {
@@ -9,6 +5,16 @@
 			copy_headers Remote-User Remote-Name Remote-Email Remote-Groups
 		}
 		reverse_proxy {args[1:]}
+	}
+}
+
+http://headscale.{$BASE_DOMAIN} {
+	handle /generate_204 {
+		respond 204
+	}
+
+	handle {
+		redir https://{host}{uri}
 	}
 }
 
@@ -123,8 +129,6 @@
 			reverse_proxy host.containers.internal:54624
 		}
 	}
-	@headscale-api host headscale-grpc.{$BASE_DOMAIN}
-	reverse_proxy @headscale-api h2c://host.containers.internal:52359
 
 	@jellyfin host jellyfin.{$BASE_DOMAIN}
 	import protected @jellyfin 100.64.0.3:8096

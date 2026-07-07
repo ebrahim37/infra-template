@@ -6,6 +6,7 @@ ContainerName=caddy
 Image=ghcr.io/caddy-dns/cloudflare:latest
 Network=pasta:--map-host-loopback,169.254.1.3
 AddHost=host.containers.internal:169.254.1.3
+PublishPort=80:80
 PublishPort=443:443
 PublishPort=443:443/udp
 Environment="BASE_DOMAIN={{ base_domain }}"

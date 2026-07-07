@@ -11,7 +11,6 @@ ReadOnly=true
 Tmpfs=/var/run/headscale
 AddHost=auth.{{ base_domain }}:host-gateway
 PublishPort=127.0.0.1:54624:8080
-PublishPort=127.0.0.1:52359:50443
 PublishPort=3480:3480/udp
 Volume=./headscale.yaml:/etc/headscale/config.yaml:z
 Volume=./dns_records.json:/etc/headscale/dns_records.json:z
