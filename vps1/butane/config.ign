@@ -15,6 +15,14 @@
   "storage": {
     "directories": [
       {
+        "path": "/etc/containers",
+        "mode": 493
+      },
+      {
+        "path": "/etc/containers/systemd",
+        "mode": 493
+      },
+      {
         "group": {
           "name": "core"
         },
@@ -104,7 +112,7 @@
     "links": [
       {
         "overwrite": true,
-        "path": "/etc/containers/systemd",
+        "path": "/etc/containers/systemd/vps1-root",
         "target": "/var/home/core/containers-git/vps1/services-dist/root"
       },
       {
