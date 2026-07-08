@@ -19,7 +19,7 @@ Volume=/home/core/containers-git/vps1/volumes/blocky-logs:/logs:U,Z
 [Service]
 TimeoutStartSec=15min
 ExecStartPre=/usr/bin/mkdir -p /home/core/containers-git/vps1/volumes/blocky-logs
-ExecStartPre=/bin/sh -c "until /usr/sbin/ip -4 addr show dev tailscale0 2>/dev/null | /usr/bin/grep -q '100\\.64\\.0\\.2/'; do /usr/bin/sleep 1; done"
+ExecStartPre=/bin/sh -c "until /usr/sbin/ip -4 addr show dev tailscale0 2>/dev/null | /usr/bin/grep -q '{{ tailnet_ipv4 | replace(".", "\\.") }}/'; do /usr/bin/sleep 1; done"
 ExecStartPre=/usr/bin/sleep 1
 
 [Install]
