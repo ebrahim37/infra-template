@@ -1,7 +1,8 @@
 [Unit]
 Description=Tailscale client
-Wants=network-online.target headscale.service
-After=network-online.target headscale.service
+Requires=user@1000.service
+Wants=network-online.target
+After=network-online.target user@1000.service
 
 [Container]
 ContainerName=tailscale-client
@@ -20,6 +21,8 @@ Environment="TS_EXTRA_ARGS=--login-server=https://headscale.{{ base_domain }} --
 
 [Service]
 TimeoutStartSec=15min
+# Headscale is a rootless unit, so start it through core's user manager.
+ExecStartPre=/usr/sbin/runuser -u core -- /usr/bin/env XDG_RUNTIME_DIR=/run/user/1000 /usr/bin/systemctl --user start headscale.service
 ExecStartPre=install -d -o core -g core -m 0755 /home/core/containers-git/vps1/volumes/tailscale-client-data
 
 [Install]
