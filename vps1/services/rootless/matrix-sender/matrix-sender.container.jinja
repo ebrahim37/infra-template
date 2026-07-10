@@ -1,7 +1,7 @@
 [Unit]
 Description=Matrix sender API
-Wants=tuwunel.service caddy.service
-After=tuwunel.service caddy.service
+Requires=tuwunel.container caddy.container
+After=tuwunel.container caddy.container
 
 [Container]
 ContainerName=matrix-sender

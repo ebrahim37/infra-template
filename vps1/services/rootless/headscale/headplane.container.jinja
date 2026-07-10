@@ -1,7 +1,7 @@
 [Unit]
 Description=Headplane UI
-Wants=headscale.service docker-socket-proxy.service
-After=headscale.service docker-socket-proxy.service
+Requires=headscale.container docker-socket-proxy.container caddy.container
+After=headscale.container docker-socket-proxy.container caddy.container
 
 [Container]
 ContainerName=headplane

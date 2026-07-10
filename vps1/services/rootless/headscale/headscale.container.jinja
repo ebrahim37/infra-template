@@ -1,7 +1,7 @@
 [Unit]
 Description=Headscale control server
-Wants=pocketid.service
-After=pocketid.service
+Requires=pocketid.container caddy.container
+After=pocketid.container caddy.container
 
 [Container]
 ContainerName=headscale
@@ -17,10 +17,17 @@ Volume=./dns_records.json:/etc/headscale/dns_records.json:z
 Volume=/home/core/containers-git/vps1/volumes/headscale-data:/var/lib/headscale:z
 Label=me.tale.headplane.target=headscale
 Exec=serve
+HealthCmd=["/ko-app/headscale", "health"]
+HealthInterval=10s
+HealthTimeout=3s
+HealthRetries=12
+HealthStartPeriod=20s
+Notify=healthy
 
 [Service]
 TimeoutStartSec=15min
 ExecStartPre=/usr/bin/mkdir -p /home/core/containers-git/vps1/volumes/headscale-data
+ExecStartPre=/usr/bin/sleep 4
 
 [Install]
 WantedBy=default.target

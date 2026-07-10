@@ -1,7 +1,7 @@
 [Unit]
 Description=Tuwunel Matrix homeserver
-Wants=pocketid.service
-After=pocketid.service
+Requires=pocketid.container caddy.container
+After=pocketid.container caddy.container
 
 [Container]
 ContainerName=tuwunel
@@ -16,6 +16,7 @@ Volume=./tuwunel.toml:/etc/tuwunel/tuwunel.toml:ro,Z
 [Service]
 TimeoutStartSec=15min
 ExecStartPre=/usr/bin/mkdir -p /home/core/containers-git/vps1/volumes/tuwunel-data
+ExecStartPost=/bin/sh -c "until /usr/bin/curl -fsS 'https://chat.ebra.dev/_tuwunel/server_version' >/dev/null; do /usr/bin/sleep 1; done"
 
 [Install]
 WantedBy=default.target

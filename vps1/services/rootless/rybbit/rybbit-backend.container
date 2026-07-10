@@ -1,7 +1,7 @@
 [Unit]
 Description=Rybbit backend
-Requires=rybbit-clickhouse.service rybbit-postgres.service
-After=rybbit-clickhouse.service rybbit-postgres.service
+Requires=rybbit-clickhouse.container rybbit-postgres.container
+After=rybbit-clickhouse.container rybbit-postgres.container
 
 [Container]
 ContainerName=rybbit-backend

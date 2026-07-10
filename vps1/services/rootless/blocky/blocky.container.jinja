@@ -1,7 +1,7 @@
 [Unit]
 Description=Blocky DNS server
-Wants=blocky-tailscale.service
-After=blocky-tailscale.service
+Requires=blocky-tailscale.container
+After=blocky-tailscale.container
 
 [Container]
 ContainerName=blocky
@@ -19,8 +19,8 @@ Volume=/home/core/containers-git/vps1/volumes/blocky-logs:/logs:U,Z
 [Service]
 TimeoutStartSec=15min
 ExecStartPre=/usr/bin/mkdir -p /home/core/containers-git/vps1/volumes/blocky-logs
+# tailscale-client is a rootful system unit, wait for its interface instead
 ExecStartPre=/bin/sh -c "until /usr/sbin/ip -4 addr show dev tailscale0 2>/dev/null | /usr/bin/grep -q '{{ tailnet_ipv4 | replace(".", "\\.") }}/'; do /usr/bin/sleep 1; done"
-ExecStartPre=/usr/bin/sleep 1
 
 [Install]
 WantedBy=default.target

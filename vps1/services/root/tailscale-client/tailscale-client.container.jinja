@@ -1,8 +1,7 @@
 [Unit]
 Description=Tailscale client
-Requires=user@1000.service
-Wants=network-online.target
-After=network-online.target user@1000.service
+Requires=network-online.target
+After=network-online.target
 
 [Container]
 ContainerName=tailscale-client
@@ -18,13 +17,18 @@ Environment=TS_USERSPACE=false
 Environment=TS_AUTH_ONCE=true
 Environment=TS_HOSTNAME={{ hostname }}
 Environment="TS_EXTRA_ARGS=--login-server=https://headscale.{{ base_domain }} --advertise-exit-node"
+Environment=TS_ENABLE_HEALTH_CHECK=true
+Environment=TS_LOCAL_ADDR_PORT=127.0.0.1:9002
+HealthCmd=["wget","-q","--spider","http://127.0.0.1:9002/healthz"]
+HealthInterval=10s
+HealthTimeout=3s
+HealthRetries=12
+HealthStartPeriod=10s
+Notify=healthy
 
 [Service]
 TimeoutStartSec=15min
-# Headscale and Caddy are rootless units, so start them through core's user manager.
-ExecStartPre=/usr/sbin/runuser -u core -- /usr/bin/env XDG_RUNTIME_DIR=/run/user/1000 /usr/bin/systemctl --user start headscale.service caddy.service
 ExecStartPre=install -d -o core -g core -m 0755 /home/core/containers-git/vps1/volumes/tailscale-client-data
-ExecStartPost=/bin/sh -c "until /usr/sbin/ip -4 addr show dev tailscale0 2>/dev/null | /usr/bin/grep -q '{{ tailnet_ipv4 | replace(".", "\\.") }}/'; do /usr/bin/sleep 1; done"
 
 [Install]
 WantedBy=multi-user.target

@@ -1,5 +1,7 @@
 [Unit]
 Description=Pocket ID
+Requires=caddy.container
+After=caddy.container
 
 [Container]
 ContainerName=pocketid
@@ -10,6 +12,11 @@ Environment=APP_URL=https://auth.{{ base_domain }}
 Environment=ENCRYPTION_KEY={{ pocketid_encryption_key }}
 Environment=TRUST_PROXY=true
 Volume=/home/core/containers-git/vps1/volumes/pocketid-data:/app/data:U,Z
+HealthCmd=["/app/pocket-id", "healthcheck"]
+HealthInterval=5s
+HealthTimeout=5s
+HealthRetries=36
+Notify=healthy
 
 [Service]
 TimeoutStartSec=15min

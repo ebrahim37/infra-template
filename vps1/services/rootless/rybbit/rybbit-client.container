@@ -1,7 +1,7 @@
 [Unit]
 Description=Rybbit web client
-Requires=rybbit-backend.service
-After=rybbit-backend.service
+Requires=rybbit-backend.container
+After=rybbit-backend.container
 
 [Container]
 ContainerName=rybbit-client
