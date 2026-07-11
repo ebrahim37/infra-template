@@ -9,7 +9,7 @@ Image=artix-cnc.build
 Pull=never
 Network=host
 SecurityLabelDisable=true
-Volume=/:/host:ro,rslave
+Volume=/:/host:rslave
 Volume=/home/core/.ssh:/home/ebrahim/.ssh:ro
 Volume=/home/core/containers-git/vps1/volumes/artix-data:/data:rshared
 PodmanArgs=--pid=host
