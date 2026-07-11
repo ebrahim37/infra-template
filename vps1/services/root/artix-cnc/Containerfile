@@ -26,6 +26,7 @@ RUN printf '%s\n' \
 		'PermitRootLogin no' \
 		'PubkeyAuthentication yes' \
 		'AuthenticationMethods publickey' \
+		'AuthorizedKeysFile .ssh/authorized_keys.d/ignition' \
 		'PasswordAuthentication no' \
 		'KbdInteractiveAuthentication no' \
 		> /etc/ssh/sshd_config.d/10-artix-cnc.conf \
