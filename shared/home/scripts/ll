@@ -1,0 +1,17 @@
+#!/bin/sh
+#exec sudo ls \
+#	-lhp \
+#	--group-directories-first \
+#	"$@"
+exec sudo eza \
+	--long \
+	--classify=always \
+	--color=always \
+	--color-scale=all \
+	--group-directories-first \
+	--smart-group \
+	--dereference \
+	--git-repos \
+	--time-style="+%Y-%m-%d %l:%M %p" \
+	--modified \
+	"$@"

@@ -1,0 +1,3 @@
+#!/bin/sh
+mkdir -p /tmp/yay-config /tmp/yay-cache
+XDG_CONFIG_HOME=/tmp/yay-config XDG_CACHE_HOME=/tmp/yay-cache /usr/bin/yay "$@"

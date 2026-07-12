@@ -1,0 +1,75 @@
+" All system-wide defaults are set in $VIMRUNTIME/archlinux.vim (usually just
+" /usr/share/vim/vimfiles/archlinux.vim) and sourced by the call to :runtime
+" you can find below.  If you wish to change any of those settings, you should
+" do it in this file (/etc/vimrc), since archlinux.vim will be overwritten
+" everytime an upgrade of the vim packages is performed.  It is recommended to
+" make changes after sourcing archlinux.vim since it alters the value of the
+" 'compatible' option.
+
+" This line should not be removed as it ensures that various options are
+" properly set to work with the Vim-related packages.
+runtime! archlinux.vim
+
+" If you prefer the old-style vim functionalty, add 'runtime! vimrc_example.vim'
+" Or better yet, read /usr/share/vim/vim80/vimrc_example.vim or the vim manual
+" and configure vim to your own liking!
+
+" do not load defaults if ~/.vimrc is missing
+let skip_defaults_vim=1
+
+set ignorecase
+set tabstop=4
+set shiftwidth=4
+set wrapmargin=0
+set mouse=
+set scrolloff=6
+set display=lastline
+set ttimeout
+set ttimeoutlen=10
+set incsearch
+set hlsearch
+set nrformats-=octal
+set nofixeol
+
+set backup
+set undofile
+
+inoremap <C-U> <C-G>u<C-U>
+nnoremap <silent> <Esc> :nohlsearch<CR>
+
+filetype plugin indent on
+augroup vimStartup
+	autocmd!
+	autocmd BufReadPost *
+		\ let line = line("'\"")
+		\ | if line >= 1 && line <= line("$") && &filetype !~# 'commit'
+		\      && index(['xxd', 'gitrebase', 'tutor'], &filetype) == -1
+		\      && !&diff
+		\ |   execute "normal! g`\""
+		\ | endif
+augroup END
+
+if &t_Co > 2 || has("gui_running")
+	syntax on
+	set bg=dark
+	command DiffOrig vert new | set bt=nofile | r ++edit # | 0d_ | diffthis | wincmd p | diffthis
+endif
+
+if has('langmap') && exists('+langremap')
+	set nolangremap
+endif
+
+function! s:osc52_copy(reg, type, lines) abort
+	let l:lines = a:type ==# 'V' ? a:lines + [''] : a:lines
+	call echoraw(nr2char(27) . ']52;c;' . base64_encode(str2blob(l:lines)) . nr2char(7))
+endfunction
+
+let v:clipproviders['osc52'] = {
+	\ 'copy': {
+	\   '+': function('s:osc52_copy'),
+	\   '*': function('s:osc52_copy'),
+	\ },
+	\ }
+
+set clipmethod^=osc52
+set clipboard^=unnamedplus

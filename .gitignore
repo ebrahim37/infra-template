@@ -1,5 +1,7 @@
-**/answers.yml
-**/volumes/
+.venv/
 **/services-dist/
 
+# back these up
+**/answers.yml
+**/volumes/
 vps1/projs/

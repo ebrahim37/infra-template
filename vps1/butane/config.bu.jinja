@@ -65,6 +65,7 @@ storage:
           127.0.0.1        localhost
           ::1              localhost
           {{ public_ipv4 }}   {{ hostname }}.{{ base_domain }}
+          {{ public_ipv6 }}   {{ hostname }}.{{ base_domain }}
     - path: /etc/sysctl.d/90-containers.conf
       mode: 0644
       contents:

@@ -1,0 +1,7 @@
+#!/bin/sh
+PORT=$1
+shift
+sudo ~/.bun/bin/http-server "$@" \
+	-p $PORT \
+	--log-ip \
+	--robots

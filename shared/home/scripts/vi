@@ -1,0 +1,3 @@
+#!/bin/sh
+mkdir -p /tmp/vim-cache
+XDG_CACHE_HOME=/tmp/vim-cache command vim -i /tmp/vim-viminfo "$@"

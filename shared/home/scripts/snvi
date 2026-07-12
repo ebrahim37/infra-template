@@ -1,0 +1,8 @@
+#!/bin/sh
+mkdir -p /tmp/nvim-root-cache /tmp/nvim-root-data /tmp/nvim-root-state
+sudo env \
+	XDG_CACHE_HOME=/tmp/nvim-root-cache \
+	XDG_DATA_HOME=/tmp/nvim-root-data \
+	XDG_STATE_HOME=/tmp/nvim-root-state \
+	NVIM_LOG_FILE=/tmp/nvim-root-state/nvim.log \
+	nvim -i /tmp/nvim-root-state/main.shada "$@"
