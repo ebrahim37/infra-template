@@ -127,7 +127,7 @@ podman run --rm --interactive \
 			.venv/bin/python -m pip install copier
 		fi
 		.venv/bin/copier copy --quiet --data-file /answers.yml "$1/services" "$1/services-dist"
-		.venv/bin/copier copy --quiet --data-file /answers.yml shared "$1/services-dist/root/artix-cnc/shared"
+		.venv/bin/copier copy --quiet --data-file /answers.yml shared "$1/services-dist/root/cnc/shared"
 	' sh "$host_name"
 rm -f "$data_file" "$host_dir/services/copier.yml" "$repo_dir/shared/copier.yml"
 
