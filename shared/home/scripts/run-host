@@ -1,0 +1,12 @@
+#!/bin/sh
+exec sudo nsenter -t 1 -u -i -n -p -- \
+	chroot --userspec=1000:1000 /host /usr/bin/env -i \
+		TERM="${TERM:-xterm-256color}" \
+		HOME=/home/core \
+		USER=core \
+		LOGNAME=core \
+		SHELL=/bin/bash \
+		PATH=/usr/local/bin:/usr/bin:/usr/local/sbin \
+		XDG_RUNTIME_DIR=/run/user/1000 \
+		DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus \
+		/bin/bash -lc "$*"

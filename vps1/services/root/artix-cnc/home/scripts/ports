@@ -1,0 +1,9 @@
+#!/bin/sh
+
+pasta_pid=$(pgrep -u "$(id -u)" -f '/usr/bin/pasta .*13000-15999' | head -n 1)
+
+if [ -z "$pasta_pid" ]; then
+    exec sudo ss -lntup
+fi
+
+sudo ss -lntup | awk -v process="pid=$pasta_pid," 'NR == 1 || index($0, process) == 0'

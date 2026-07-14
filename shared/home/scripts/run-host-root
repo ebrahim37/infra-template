@@ -1,0 +1,10 @@
+#!/bin/sh
+exec sudo nsenter -t 1 -u -i -n -p -- \
+	chroot /host /usr/bin/env -i \
+		TERM="${TERM:-xterm-256color}" \
+		HOME=/root \
+		USER=root \
+		LOGNAME=root \
+		SHELL=/bin/bash \
+		PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/var/lib/snapd/snap/bin \
+		/bin/bash -lc "$*"
