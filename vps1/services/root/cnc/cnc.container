@@ -9,6 +9,8 @@ Image=cnc.build
 Pull=never
 Network=host
 SecurityLabelDisable=true
+Timezone=America/Toronto
+Environment=TZ=America/Toronto
 Volume=/:/host:rslave
 Volume=/home/core/infra-template/vps1/volumes/cnc-data:/data:rshared
 PodmanArgs=--pid=host
