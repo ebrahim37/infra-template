@@ -1,25 +1,31 @@
-if vim.g.neovide or vim.loop.os_gethostname() == 'vps1' then
-	vim.o.guifont = 'Consolas Nerd Font:h11.5'
-	vim.o.linespace = 2
-	
-	vim.schedule(function()
-		vim.o.columns = 118
-		vim.o.lines = 57
-	end)
-	
-	vim.g.neovide_profiler = false
-	vim.g.neovide_input_macos_option_key_is_meta = 'both'
-	vim.g.neovide_normal_opacity = 1
-	vim.g.neovide_remember_window_size = false
-	
-	vim.g.neovide_position_animation_length = 0
-	vim.g.neovide_cursor_animation_length = 0.00
-	vim.g.neovide_cursor_trail_size = 0
-	vim.g.neovide_cursor_animate_in_insert_mode = false
-	vim.g.neovide_cursor_animate_command_line = false
-	vim.g.neovide_scroll_animation_far_lines = 0
-	vim.g.neovide_scroll_animation_length = 0.00
-end
+vim.api.nvim_create_autocmd("UIEnter", {
+	group = vim.api.nvim_create_augroup("neovide_config", { clear = true }),
+	desc = "Configure Neovide when it attaches",
+	callback = function()
+		if vim.g.neovide then
+			vim.o.guifont = 'Consolas Nerd Font:h11.5'
+			vim.o.linespace = 2
+			
+			vim.schedule(function()
+				vim.o.columns = 118
+				vim.o.lines = 57
+			end)
+			
+			vim.g.neovide_profiler = false
+			vim.g.neovide_input_macos_option_key_is_meta = 'both'
+			vim.g.neovide_normal_opacity = 1
+			vim.g.neovide_remember_window_size = false
+			
+			vim.g.neovide_position_animation_length = 0
+			vim.g.neovide_cursor_animation_length = 0.00
+			vim.g.neovide_cursor_trail_size = 0
+			vim.g.neovide_cursor_animate_in_insert_mode = false
+			vim.g.neovide_cursor_animate_command_line = false
+			vim.g.neovide_scroll_animation_far_lines = 0
+			vim.g.neovide_scroll_animation_length = 0.00
+		end
+	end,
+})
 
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
