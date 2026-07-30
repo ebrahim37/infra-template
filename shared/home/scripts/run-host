@@ -1,5 +1,20 @@
 #!/bin/sh
-exec sudo nsenter -t 1 -u -i -n -p -- \
+case ${1-} in
+	systemctl | /usr/bin/systemctl)
+		shift
+		set -- /usr/bin/systemctl --machine=core@.host "$@"
+		;;
+	podman | /usr/bin/podman)
+		shift
+		set -- /usr/bin/podman --remote --url=unix:///run/user/1000/podman/podman.sock "$@"
+		;;
+esac
+
+exec sudo nsenter \
+	--uts=/host/proc/1/ns/uts \
+	--ipc=/host/proc/1/ns/ipc \
+	--net=/host/proc/1/ns/net \
+	-- \
 	chroot --userspec=1000:1000 /host /usr/bin/env -i \
 		TERM="${TERM:-xterm-256color}" \
 		HOME=/home/core \

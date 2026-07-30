@@ -1,5 +1,16 @@
 #!/bin/sh
-exec sudo nsenter -t 1 -u -i -n -p -- \
+case ${1-} in
+	systemctl | /usr/bin/systemctl)
+		shift
+		set -- /usr/bin/systemctl --machine=.host "$@"
+		;;
+esac
+
+exec sudo nsenter \
+	--uts=/host/proc/1/ns/uts \
+	--ipc=/host/proc/1/ns/ipc \
+	--net=/host/proc/1/ns/net \
+	-- \
 	chroot /host /usr/bin/env -i \
 		TERM="${TERM:-xterm-256color}" \
 		HOME=/root \

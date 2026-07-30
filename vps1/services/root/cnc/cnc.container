@@ -1,5 +1,5 @@
 [Unit]
-Description=Artix dinit C&C container
+Description=Arch systemd C&C container
 Requires=network-online.target
 After=network-online.target
 
@@ -14,17 +14,21 @@ Environment=TZ=America/Toronto
 Volume=/:/host:rslave
 Volume=/home/core/infra-template/vps1/volumes/cnc-data:/data:rshared
 Volume=/home/core/.config/sops/age/keys.txt:/home/ebrahim/.config/sops/age/keys.txt:ro
-PodmanArgs=--pid=host
-PodmanArgs=--cgroupns=host
-PodmanArgs=--userns=host
+Volume=/var/tmp/cnc-podman-rootless:/home/ebrahim/.local/share/containers
+Volume=/var/tmp/cnc-podman-rootful:/var/lib/containers
+UserNS=host
+PodmanArgs=--cgroupns=private
 PodmanArgs=--privileged
-StopSignal=SIGTERM
+PodmanArgs=--systemd=always
+StopSignal=SIGRTMIN+3
 
 [Service]
 TimeoutStartSec=30min
 Restart=always
 RestartSec=5s
 ExecStartPre=/usr/bin/mkdir -p /home/core/infra-template/vps1/volumes/cnc-data
+ExecStartPre=/usr/bin/install -d -m 0700 -o 1000 -g 1000 /var/tmp/cnc-podman-rootless
+ExecStartPre=/usr/bin/install -d -m 0700 -o 0 -g 0 /var/tmp/cnc-podman-rootful
 
 [Install]
 WantedBy=multi-user.target

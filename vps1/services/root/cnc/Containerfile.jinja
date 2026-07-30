@@ -1,22 +1,25 @@
-FROM docker.io/artixlinux/artixlinux:base-dinit
+FROM docker.io/library/archlinux:base
 
 RUN pacman -Syu --noconfirm --needed \
+	age \
 	base-devel \
 	btop \
 	bubblewrap \
+	croc \
 	eza \
-	fuse-overlayfs \
 	git \
 	less \
 	ncdu \
 	neovim \
-	npm \
+	nodejs \
 	openssh \
 	plocate \
+	pnpm \
 	podman \
 	python \
 	ripgrep \
 	screen \
+	sops \
 	unzip \
 	vim
 
@@ -26,17 +29,7 @@ RUN groupadd -g 1000 ebrahim \
 	&& setcap cap_setgid=ep /usr/bin/newgidmap \
 	&& printf '%%wheel ALL=(ALL:ALL) NOPASSWD: ALL\n' > /etc/sudoers.d/10-wheel-nopasswd
 
-RUN printf '%s\n' \
-		'type = internal' \
-		'depends-on = sshd' \
-	> /etc/dinit.d/boot \
-	&& printf '%s\n' \
-		'type = process' \
-		'command = /bin/sh -c "cp /host/etc/ssh/ssh_host_* /etc/ssh/ 2>/dev/null || true; chmod 0600 /etc/ssh/ssh_host_*_key 2>/dev/null || true; exec /usr/bin/sshd -D -e"' \
-		'log-type = buffer' \
-		'log-buffer-size = 65536' \
-		> /etc/dinit.d/sshd \
-	&& install -d -m 0755 /etc/ssh/sshd_config.d \
+RUN install -d -m 0755 /etc/ssh/sshd_config.d /etc/systemd/system/sshd.service.d \
 	&& printf '%s\n' \
 		'Port 222' \
 		'PermitRootLogin no' \
@@ -45,7 +38,13 @@ RUN printf '%s\n' \
 		'PasswordAuthentication no' \
 		'KbdInteractiveAuthentication no' \
 		> /etc/ssh/sshd_config.d/10-cnc.conf \
-	&& ssh-keygen -A
+	&& printf '%s\n' \
+		'[Service]' \
+		'ExecStartPre=/bin/sh -c "cp /host/etc/ssh/ssh_host_* /etc/ssh/ 2>/dev/null || true; chmod 0600 /etc/ssh/ssh_host_*_key 2>/dev/null || true"' \
+		> /etc/systemd/system/sshd.service.d/10-host-keys.conf \
+	&& install -m 0444 /dev/null /etc/machine-id \
+	&& ssh-keygen -A \
+	&& systemctl enable sshd.service
 
 RUN install -d -m 0700 -o ebrahim -g ebrahim /home/ebrahim/.ssh
 
@@ -66,36 +65,13 @@ RUN install -d -m 0700 -o ebrahim -g ebrahim /home/ebrahim/.ssh \
 	&& chmod +x /home/ebrahim/scripts/* \
 	&& rm -f /home/ebrahim/.bash_logout
 
-RUN croc_tmp=$(mktemp -d) \
-	&& croc_version=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/schollz/croc/releases/latest | sed 's#.*/##') \
-	&& curl -fsSL "https://github.com/schollz/croc/releases/download/${croc_version}/croc_${croc_version}_Linux-64bit.tar.gz" \
-		| tar -xz -C "$croc_tmp" \
-	&& install -D -m 0755 -o ebrahim -g ebrahim "$croc_tmp/croc" /home/ebrahim/scripts/croc-bin \
-	&& rm -rf "$croc_tmp"
-
-RUN age_tmp=$(mktemp -d) \
-	&& age_version=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/FiloSottile/age/releases/latest | sed 's#.*/##') \
-	&& curl -fsSL "https://github.com/FiloSottile/age/releases/download/${age_version}/age-${age_version}-linux-amd64.tar.gz" \
-		| tar -xz -C "$age_tmp" \
-	&& for binary in age age-inspect age-keygen; do \
-		install -D -m 0755 -o ebrahim -g ebrahim "$age_tmp/age/$binary" "/home/ebrahim/scripts/$binary"; \
-	done \
-	&& rm -rf "$age_tmp"
-
-RUN sops_version=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/getsops/sops/releases/latest | sed 's#.*/##') \
-	&& curl -fsSL "https://github.com/getsops/sops/releases/download/${sops_version}/sops-${sops_version}.linux.amd64" \
-		-o /home/ebrahim/scripts/sops \
-	&& chown ebrahim:ebrahim /home/ebrahim/scripts/sops \
-	&& chmod 0755 /home/ebrahim/scripts/sops
-
 RUN git clone --depth=1 https://aur.archlinux.org/yay-bin.git /tmp/yay-bin \
 	&& chown -R ebrahim:ebrahim /tmp/yay-bin \
 	&& su - ebrahim -c 'cd /tmp/yay-bin && makepkg -i --noconfirm --cleanbuild --clean' \
 	&& rm -rf /tmp/yay-bin \
 	&& su - ebrahim -c '/home/ebrahim/scripts/ya -Yc && /home/ebrahim/scripts/ya -Scc' \
-	&& su - ebrahim -c 'curl -fsSL https://bun.sh/install | bash' \
-	&& su - ebrahim -c 'bun install -g http-server @openai/codex'
+	&& su - ebrahim -c 'PNPM_HOME=/home/ebrahim/.local/share/pnpm PATH=/home/ebrahim/.local/share/pnpm/bin:/usr/bin pnpm add --global @openai/codex http-server'
 
-STOPSIGNAL SIGTERM
+STOPSIGNAL SIGRTMIN+3
 
-ENTRYPOINT ["/sbin/dinit", "--services-dir", "/etc/dinit.d", "boot"]
+ENTRYPOINT ["/sbin/init"]

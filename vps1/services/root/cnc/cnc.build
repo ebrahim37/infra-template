@@ -1,5 +1,5 @@
 [Unit]
-Description=Build Artix dinit C&C image
+Description=Build Arch systemd C&C image
 
 [Build]
 ImageTag=localhost/cnc:latest
