@@ -1,6 +1,6 @@
 #!/bin/sh
 case ${1-} in
-	systemctl | /usr/bin/systemctl)
+	systemctl)
 		shift
 		set -- /usr/bin/systemctl --machine=.host "$@"
 		;;

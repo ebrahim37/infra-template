@@ -1,12 +1,8 @@
 #!/bin/sh
 case ${1-} in
-	systemctl | /usr/bin/systemctl)
+	systemctl)
 		shift
 		set -- /usr/bin/systemctl --machine=core@.host "$@"
-		;;
-	podman | /usr/bin/podman)
-		shift
-		set -- /usr/bin/podman --remote --url=unix:///run/user/1000/podman/podman.sock "$@"
 		;;
 esac
 
