@@ -142,5 +142,10 @@ sync_tree "$dest/rootless" "$HOME/.config/containers/systemd/${host_name}-rootle
 relabel_rootless_mounts "$HOME/.config/containers/systemd/${host_name}-rootless"
 
 install -d -m 0755 "$host_dir/volumes"
-systemctl --user daemon-reload || true
-sudo -n systemctl daemon-reload || true
+if [ "${RUN_HOST-}" = 1 ]; then
+	systemctl --machine="${USER}@.host" --user daemon-reload
+	sudo -n systemctl --machine=.host daemon-reload
+else
+	systemctl --user daemon-reload
+	sudo -n systemctl daemon-reload
+fi

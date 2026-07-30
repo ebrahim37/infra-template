@@ -1,7 +1,6 @@
 #!/bin/sh
 set -u
 
-hostname=$(sed -n '1p' /etc/hostname | tr -d '[:space:]')
 units_tmp=$(mktemp)
 done_tmp=$(mktemp)
 
@@ -72,8 +71,8 @@ progress() {
 }
 
 {
-	add_units rootful "$HOME/infra-template/$hostname/services-dist/root"
-	add_units rootless "$HOME/infra-template/$hostname/services-dist/rootless"
+	add_units rootful "$HOME/infra-template/$HOSTNAME/services-dist/root"
+	add_units rootless "$HOME/infra-template/$HOSTNAME/services-dist/rootless"
 } | sort -u > "$units_tmp"
 
 total=$(wc -l < "$units_tmp" | tr -d ' ')

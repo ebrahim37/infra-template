@@ -4,9 +4,9 @@
 export EDITOR=vi
 export VISUAL=vi
 
-export PATH="$PATH:$HOME/scripts"
 export PNPM_HOME="$HOME/.local/share/pnpm"
 export PATH="$PNPM_HOME/bin:$PATH"
+export PATH="$HOME/scripts:$PATH"
 
 export PS1='\[\e[31m\][\[\e[33m\]\u\[\e[32m\]@\[\e[34m\]\h \[\e[35m\]\W\[\e[31m\]]\[\e[m\]\$ '
 
@@ -23,6 +23,6 @@ alias hjc="run-host journalctl --user -u"
 alias hssc="run-host-root systemctl"
 alias hjjc="run-host journalctl -u"
 
-alias clean-cache="ya -Yc && ya -Scc && pnpm store prune"
+alias clean-cache="ya -Yc --noconfirm && ya -Scc --noconfirm && pnpm store prune"
 alias pa="run-host podman attach "
 alias caddy-reload="run-host podman exec -w /etc/caddy caddy caddy reload"

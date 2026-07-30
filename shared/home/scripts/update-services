@@ -1,7 +1,10 @@
 #!/bin/sh
 set -eu
 
-hostname=$(sed -n '1p' /etc/hostname | tr -d '[:space:]')
+repo_dir=$HOME/infra-template
+run_host=$repo_dir/shared/home/scripts/run-host
 
-git -C ~/infra-template pull --ff-only
-run-host /home/core/infra-template/build-services.sh "$hostname"
+git -C "$repo_dir" pull --ff-only
+sh "$run_host" systemctl --user start podman.socket
+exec sh "$run_host" \
+	/home/core/infra-template/build-services.sh "$HOSTNAME"

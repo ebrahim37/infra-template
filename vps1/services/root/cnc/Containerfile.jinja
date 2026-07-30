@@ -69,7 +69,7 @@ RUN git clone --depth=1 https://aur.archlinux.org/yay-bin.git /tmp/yay-bin \
 	&& chown -R ebrahim:ebrahim /tmp/yay-bin \
 	&& su - ebrahim -c 'cd /tmp/yay-bin && makepkg -i --noconfirm --cleanbuild --clean' \
 	&& rm -rf /tmp/yay-bin \
-	&& su - ebrahim -c '/home/ebrahim/scripts/ya -Yc && /home/ebrahim/scripts/ya -Scc' \
+	&& su - ebrahim -c '/home/ebrahim/scripts/ya -Yc --noconfirm && /home/ebrahim/scripts/ya -Scc --noconfirm' \
 	&& su - ebrahim -c 'PNPM_HOME=/home/ebrahim/.local/share/pnpm PATH=/home/ebrahim/.local/share/pnpm/bin:/usr/bin pnpm add --global @openai/codex http-server'
 
 STOPSIGNAL SIGRTMIN+3

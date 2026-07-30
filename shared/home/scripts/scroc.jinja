@@ -4,4 +4,4 @@ sudo env \
 	CROC_CONFIG_DIR=/tmp/croc-root-config \
 	CROC_SECRET="{{ shared.priv_croc_secret }}" \
 	CROC_PASS="{{ shared.priv_croc_password }}" \
-	~/scripts/croc-bin --disable-clipboard --relay "vps1.ebra.dev:53889" "$@"
+	/usr/bin/croc --disable-clipboard --relay "vps1.ebra.dev:53889" "$@"

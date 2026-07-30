@@ -1,0 +1,4 @@
+#!/bin/sh
+mkdir -p /data/codex || exit
+export CODEX_HOME=/data/codex
+exec "$HOME/.local/share/pnpm/bin/codex" "$@"

@@ -1,14 +1,24 @@
 #!/bin/sh
 
-run-host journalctl -u cnc-build -f -n 0 -o cat &
+scripts_dir=$HOME/infra-template/shared/home/scripts
 
+run_host() {
+	sh "$scripts_dir/run-host" "$@"
+}
+
+run_host_root() {
+	sh "$scripts_dir/run-host-root" "$@"
+}
+
+run_host journalctl -u cnc-build -f -n 0 -o cat &
+journal_pid=$!
 sleep 0.1
 
-run-host-root systemctl --job-mode=ignore-dependencies restart cnc-build
+run_host_root systemctl --job-mode=ignore-dependencies restart cnc-build
 restart_status=$?
 
-kill "$!" 2>/dev/null
-wait "$!" 2>/dev/null
+kill "$journal_pid" 2>/dev/null
+wait "$journal_pid" 2>/dev/null
 
 if [ "$restart_status" -ne 0 ]; then
 	exit "$restart_status"
@@ -19,6 +29,6 @@ IFS= read -r answer </dev/tty
 
 case $answer in
 	y | Y | yes | YES | Yes)
-		run-host-root systemctl restart cnc
+		run_host_root systemctl --no-block restart cnc
 		;;
 esac

@@ -1,4 +1,6 @@
 #!/bin/sh
+set -eu
+
 case ${1-} in
 	systemctl)
 		shift
@@ -20,4 +22,6 @@ exec sudo nsenter \
 		PATH=/usr/local/bin:/usr/bin:/usr/local/sbin \
 		XDG_RUNTIME_DIR=/run/user/1000 \
 		DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus \
+		CONTAINER_HOST=unix:///run/user/1000/podman/podman.sock \
+		RUN_HOST=1 \
 		"$@"
