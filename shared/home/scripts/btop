@@ -1,0 +1,19 @@
+#!/bin/sh
+set -eu
+
+IFS=' ' read -r host_pid _ < /host/proc/self/stat
+
+if [ -z "$host_pid" ]; then
+	echo "btop: could not determine the host PID for CNC" >&2
+	exit 1
+fi
+
+cnc_root="/proc/$host_pid/root"
+
+run-host \
+	"$cnc_root/usr/lib64/ld-linux-x86-64.so.2" \
+	--library-path "$cnc_root/usr/lib" \
+	"$cnc_root/usr/bin/btop" \
+	--config "$cnc_root/home/ebrahim/.config/btop/btop.conf" \
+	--force-utf \
+	"$@"
