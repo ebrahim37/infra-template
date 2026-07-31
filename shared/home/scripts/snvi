@@ -1,8 +1,8 @@
 #!/bin/sh
-mkdir -p /tmp/nvim-root-cache /tmp/nvim-root-data /tmp/nvim-root-state
+mkdir -p /var/tmp/nvim-root-cache /var/tmp/nvim-root-data /var/tmp/nvim-root-state
 sudo env \
-	XDG_CACHE_HOME=/tmp/nvim-root-cache \
-	XDG_DATA_HOME=/tmp/nvim-root-data \
-	XDG_STATE_HOME=/tmp/nvim-root-state \
-	NVIM_LOG_FILE=/tmp/nvim-root-state/nvim.log \
-	nvim -i /tmp/nvim-root-state/main.shada "$@"
+	XDG_CACHE_HOME=/var/tmp/nvim-root-cache \
+	XDG_DATA_HOME=/var/tmp/nvim-root-data \
+	XDG_STATE_HOME=/var/tmp/nvim-root-state \
+	NVIM_LOG_FILE=/var/tmp/nvim-root-state/nvim.log \
+	nvim -i /var/tmp/nvim-root-state/main.shada "$@"

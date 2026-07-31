@@ -1,7 +1,7 @@
 #!/bin/sh
-mkdir -p /tmp/nvim-cache /tmp/nvim-data /tmp/nvim-state
-XDG_CACHE_HOME=/tmp/nvim-cache \
-	XDG_DATA_HOME=/tmp/nvim-data \
-	XDG_STATE_HOME=/tmp/nvim-state \
-	NVIM_LOG_FILE=/tmp/nvim-state/nvim.log \
-	command nvim -i /tmp/nvim-state/main.shada "$@"
+mkdir -p /var/tmp/nvim-cache /var/tmp/nvim-data /var/tmp/nvim-state
+XDG_CACHE_HOME=/var/tmp/nvim-cache \
+	XDG_DATA_HOME=/var/tmp/nvim-data \
+	XDG_STATE_HOME=/var/tmp/nvim-state \
+	NVIM_LOG_FILE=/var/tmp/nvim-state/nvim.log \
+	command nvim -i /var/tmp/nvim-state/main.shada "$@"
