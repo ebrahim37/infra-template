@@ -28,7 +28,11 @@ RUN groupadd -g 1000 ebrahim \
 	&& useradd -m -u 1000 -g 1000 -G wheel -s /bin/bash ebrahim \
 	&& setcap cap_setuid=ep /usr/bin/newuidmap \
 	&& setcap cap_setgid=ep /usr/bin/newgidmap \
-	&& printf '%%wheel ALL=(ALL:ALL) NOPASSWD: ALL\n' > /etc/sudoers.d/10-wheel-nopasswd
+	&& printf '%s\n' \
+		'Defaults env_keep += "SYSTEMD_PAGER"' \
+		'%wheel ALL=(ALL:ALL) NOPASSWD: ALL' \
+		> /etc/sudoers.d/10-wheel-nopasswd \
+	&& printf 'export SYSTEMD_PAGER=cat\n' > /etc/profile.d/systemd-pager.sh
 
 RUN install -d -m 0755 /etc/ssh/sshd_config.d /etc/systemd/system/sshd.service.d \
 	&& printf '%s\n' \
