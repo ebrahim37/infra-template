@@ -30,6 +30,8 @@ vim.api.nvim_create_autocmd("UIEnter", {
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
+vim.o.clipboard = 'unnamedplus'
+
 vim.o.number = true
 vim.o.relativenumber = true
 vim.o.signcolumn = 'yes'
@@ -41,10 +43,6 @@ vim.o.laststatus = 2
 vim.o.showmode = false
 
 vim.o.splitkeep = 'screen'
-
-vim.schedule(function()
-	vim.o.clipboard = 'unnamedplus'
-end)
 
 vim.o.undofile = true
 vim.o.swapfile = false
