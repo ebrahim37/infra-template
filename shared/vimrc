@@ -10,6 +10,26 @@
 " properly set to work with the Vim-related packages.
 runtime! archlinux.vim
 
+" when archlinux.vim doesn't exist, manually override the undo/backup dirs
+if exists('$XDG_CACHE_HOME') && !empty($XDG_CACHE_HOME)
+	let s:vim_cache_dir = expand($XDG_CACHE_HOME) . '/vim'
+else
+	let s:vim_cache_dir = expand('~/.cache/vim')
+endif
+
+let &g:undodir = s:vim_cache_dir . '/undo//'
+let &g:backupdir = s:vim_cache_dir . '/backup//'
+let &g:directory = s:vim_cache_dir . '/swap//'
+
+for s:dir in [&g:undodir, &g:backupdir, &g:directory]
+	if !isdirectory(expand(s:dir))
+		silent! call mkdir(expand(s:dir), 'p', 0700)
+	endif
+endfor
+
+unlet s:dir
+unlet s:vim_cache_dir
+
 " If you prefer the old-style vim functionalty, add 'runtime! vimrc_example.vim'
 " Or better yet, read /usr/share/vim/vim80/vimrc_example.vim or the vim manual
 " and configure vim to your own liking!
