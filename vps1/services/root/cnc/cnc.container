@@ -14,8 +14,12 @@ Environment=TZ=America/Toronto
 Volume=/:/host:rslave
 Volume=/home/core/infra-template/vps1/volumes/cnc-data:/data:rshared
 Volume=/home/core/.config/sops/age/keys.txt:/home/ebrahim/.config/sops/age/keys.txt:ro
+Volume=/var/tmp/cnc-var-tmp:/var/tmp
 Volume=/var/tmp/cnc-podman-rootless:/home/ebrahim/.local/share/containers
 Volume=/var/tmp/cnc-podman-rootful:/var/lib/containers
+Volume=/var/tmp/cnc-docker-rootless:/home/ebrahim/.local/share/docker
+Volume=/var/tmp/cnc-docker-rootful:/var/lib/docker
+Volume=/var/tmp/cnc-containerd-rootful:/var/lib/containerd
 UserNS=host
 PodmanArgs=--cgroupns=private
 PodmanArgs=--privileged
@@ -27,8 +31,12 @@ TimeoutStartSec=30min
 Restart=always
 RestartSec=5s
 ExecStartPre=/usr/bin/mkdir -p /home/core/infra-template/vps1/volumes/cnc-data
+ExecStartPre=/usr/bin/install -d -m 1777 -o 0 -g 0 /var/tmp/cnc-var-tmp
 ExecStartPre=/usr/bin/install -d -m 0700 -o 1000 -g 1000 /var/tmp/cnc-podman-rootless
 ExecStartPre=/usr/bin/install -d -m 0700 -o 0 -g 0 /var/tmp/cnc-podman-rootful
+ExecStartPre=/usr/bin/install -d -m 0700 -o 1000 -g 1000 /var/tmp/cnc-docker-rootless
+ExecStartPre=/usr/bin/install -d -m 0700 -o 0 -g 0 /var/tmp/cnc-docker-rootful
+ExecStartPre=/usr/bin/install -d -m 0700 -o 0 -g 0 /var/tmp/cnc-containerd-rootful
 
 [Install]
 WantedBy=multi-user.target
