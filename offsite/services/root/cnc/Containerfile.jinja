@@ -1,0 +1,86 @@
+FROM docker.io/library/golang:bookworm AS croc
+
+RUN go install github.com/schollz/croc/v10@latest
+
+FROM docker.io/library/debian:stable-slim
+
+RUN apt-get update \
+	&& apt-get install -y --no-install-recommends \
+		age \
+		bash \
+		btop \
+		build-essential \
+		bubblewrap \
+		ca-certificates \
+		curl \
+		eza \
+		git \
+		less \
+		ncdu \
+		neovim \
+		nodejs \
+		npm \
+		openssh-server \
+		plocate \
+		podman \
+		python3 \
+		ripgrep \
+		screen \
+		sudo \
+		systemd \
+		systemd-sysv \
+		uidmap \
+		unzip \
+		vim \
+	&& rm -rf /var/lib/apt/lists/*
+
+COPY --from=croc /go/bin/croc /usr/local/bin/croc
+
+RUN sops_version=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/getsops/sops/releases/latest | sed 's#.*/##') \
+	&& arch=$(dpkg --print-architecture) \
+	&& curl -fsSL "https://github.com/getsops/sops/releases/download/$sops_version/sops-$sops_version.linux.$arch" -o /usr/local/bin/sops \
+	&& chmod 0755 /usr/local/bin/sops
+
+RUN groupadd -g 1000 ebrahim \
+	&& useradd -m -u 1000 -g 1000 -G sudo -s /bin/bash ebrahim \
+	&& printf '%s\n' \
+		'Defaults env_keep += "SYSTEMD_PAGER"' \
+		'%sudo ALL=(ALL:ALL) NOPASSWD: ALL' \
+		> /etc/sudoers.d/10-sudo-nopasswd \
+	&& printf 'export SYSTEMD_PAGER=cat\n' > /etc/profile.d/systemd-pager.sh
+
+RUN install -d -m 0755 /etc/ssh/sshd_config.d /etc/systemd/system/ssh.service.d \
+	&& printf '%s\n' \
+		'Port 222' \
+		'PermitRootLogin no' \
+		'PubkeyAuthentication yes' \
+		'AuthenticationMethods publickey' \
+		'PasswordAuthentication no' \
+		'KbdInteractiveAuthentication no' \
+		> /etc/ssh/sshd_config.d/10-cnc.conf \
+	&& printf '%s\n' \
+		'[Service]' \
+		'ExecStartPre=/bin/sh -c "cp /host/etc/ssh/ssh_host_* /etc/ssh/ 2>/dev/null || true; chmod 0600 /etc/ssh/ssh_host_*_key 2>/dev/null || true"' \
+		> /etc/systemd/system/ssh.service.d/10-host-keys.conf \
+	&& install -m 0444 /dev/null /etc/machine-id \
+	&& ssh-keygen -A \
+	&& systemctl enable ssh.service
+
+COPY shared/vimrc /etc/vimrc
+COPY --chown=ebrahim:ebrahim shared/ssh_config /home/ebrahim/.ssh/config
+COPY --chown=ebrahim:ebrahim shared/home/ /home/ebrahim/
+COPY --chown=ebrahim:ebrahim home/ /home/ebrahim/
+RUN install -d -m 0700 -o ebrahim -g ebrahim /home/ebrahim/.ssh \
+	&& printf '%s\n' '{{ shared.ssh_authorized_key }}' > /home/ebrahim/.ssh/authorized_keys \
+	&& chown ebrahim:ebrahim /home/ebrahim/.ssh/authorized_keys \
+	&& chmod 0600 /home/ebrahim/.ssh/authorized_keys /home/ebrahim/.ssh/config \
+	&& install -d -m 0700 -o ebrahim -g ebrahim /home/ebrahim/.config/sops/age \
+	&& ln -s /host/home/core/infra-template /home/ebrahim/infra-template \
+	&& chmod +x /home/ebrahim/scripts/* \
+	&& rm -f /home/ebrahim/.bash_logout \
+	&& su - ebrahim -c 'curl -fsSL https://get.pnpm.io/install.sh | sh -' \
+	&& su - ebrahim -c 'PNPM_HOME=/home/ebrahim/.local/share/pnpm PATH=/home/ebrahim/.local/share/pnpm/bin:/usr/bin pnpm add --global @openai/codex http-server'
+
+STOPSIGNAL SIGRTMIN+3
+
+ENTRYPOINT ["/sbin/init"]

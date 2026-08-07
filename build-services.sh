@@ -47,7 +47,9 @@ sync_tree() {
 			done
 		' sh "$sync_src" "$sync_dest" {} +
 	fi
-	cp -a --no-preserve=context "$sync_src"/. "$sync_dest"/
+	if [ -d "$sync_src" ]; then
+		cp -a --no-preserve=context "$sync_src"/. "$sync_dest"/
+	fi
 }
 
 sudo_sync_tree() {
@@ -77,7 +79,9 @@ sudo_sync_tree() {
 			done
 		' sh "$sync_src" "$sync_dest" {} +
 	fi
-	sudo cp -a --no-preserve=context "$sync_src"/. "$sync_dest"/
+	if [ -d "$sync_src" ]; then
+		sudo cp -a --no-preserve=context "$sync_src"/. "$sync_dest"/
+	fi
 }
 
 relabel_rootless_mounts() {

@@ -9,6 +9,8 @@ The current hosts are:
 
 - `vps1`: a 4C/8GB VPS running most of my apps/containers.
   This is the only publicly reachable host in my network.
+- `offsite`: a Raspberry Pi 4B behind NAT. It runs only the rootful Tailscale
+  client and Debian-based C&C container.
 
 This is a personal configuration rather than a turnkey deployment. It can be
 useful as a reference, but hostnames, addresses, domains, credentials, and
@@ -20,15 +22,15 @@ service choices are specific to my environment.
   Ignition.
 - `build-services.sh` renders and deploys a host's rootful and rootless Quadlet
   trees.
+- `build-iso.sh` builds a host-specific, unattended Fedora CoreOS installer ISO.
 - `shared/` contains shell helpers and configuration copied into the C&C (command & control)
   containers of all hosts.
 - `HOST/butane/` (eg. `vps1/butane/`) contains the Fedora CoreOS provisioning template and generated
   `config.ign`.
 - `HOST/services/root/` contains privileged host services, including the C&C
   container and Tailscale client.
-- `HOST/services/rootless/` contains the application stack: Caddy, Blocky,
-  Headscale/Headplane, Pocket ID, TinyAuth, Glance, Vaultwarden, Tuwunel,
-  Rybbit, a croc relay, and several personal projects.
+- `HOST/services/rootless/` contains the application stack, eg. Caddy, Blocky,
+  Headscale/Headplane, etc.
 - `HOST/volumes/` holds persistent service data and is intentionally ignored by
   Git.
 
@@ -57,7 +59,7 @@ ignored `HOST/volumes/` directories also need their own backup strategy.
 
 ## Build the Ignition config
 
-Both build scripts need Podman. `build-services.sh` also needs the age identity
+All build scripts need Podman. `build-services.sh` also needs the age identity
 file, but SOPS and age are installed and used inside Podman.
 The Ignition config also installs SOPS and age on the host for
 interactive administration, but the build scripts do not depend on those host
@@ -76,6 +78,32 @@ boot, the Ignition config:
 - layers the required host packages;
 - installs SOPS; and
 - clones this repository to `/home/core/infra-template`.
+
+## Build an unattended installer ISO
+
+Each ISO-installable host has an `installer.env` containing its architecture
+and exact destination disk ID. Build the host's Ignition config first, then its
+ISO:
+
+```sh
+./build-butane.sh offsite
+./build-iso.sh offsite
+```
+
+The result is `isos/offsite.iso`. Booting it automatically erases the device
+named by `DEST_DEVICE`, installs the current stable aarch64 Fedora CoreOS ISO,
+and embeds `offsite/butane/config.ign` without prompting. All installer ISOs
+skip the automatic reboot so they cannot immediately start another destructive
+installation; power off or reboot manually after removing the installer media.
+
+For `offsite`, the build also downloads pinned Raspberry Pi 4 EDK2 firmware,
+adds it to the live ISO, and adds the USB-SATA quirk to both the live and
+installed kernels. The post-install hook copies EDK2 from the mounted ISO onto
+the installed `EFI-SYSTEM` partition, so installation does not need network
+access. It then schedules a clean poweroff instead of rebooting, preventing the
+installer USB from starting the destructive installation again. Disconnect
+power, remove the microSD and installer USB, then reconnect power to boot the
+SSD.
 
 ## Render and deploy services
 
