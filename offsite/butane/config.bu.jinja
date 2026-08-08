@@ -14,14 +14,16 @@ systemd:
       contents: |
         [Unit]
         Description=Layer host packages with rpm-ostree
-        Wants=network-online.target
-        After=network-online.target
+        Wants=network-online.target chronyd.service
+        After=network-online.target chronyd.service
         Before=zincati.service
         ConditionPathExists=!/var/lib/%N.stamp
 
         [Service]
         Type=oneshot
         RemainAfterExit=yes
+        TimeoutStartSec=infinity
+        ExecStartPre=/usr/bin/chronyc waitsync
         ExecStart=/usr/bin/rpm-ostree install -y --allow-inactive age git-core
         ExecStart=/bin/sh -eu -c 'sops_tmp=$$(mktemp); trap "rm -f $$sops_tmp" EXIT; sops_version=$$(curl -fsSIL -o /dev/null -w "%%{url_effective}" https://github.com/getsops/sops/releases/latest | sed "s#.*/##"); curl -fsSL "https://github.com/getsops/sops/releases/download/$${sops_version}/sops-$${sops_version}.linux.arm64" -o "$$sops_tmp"; install -D -m 0755 "$$sops_tmp" /usr/local/bin/sops'
         ExecStart=/bin/touch /var/lib/%N.stamp
@@ -34,8 +36,8 @@ systemd:
       contents: |
         [Unit]
         Description=Clone containers git repo for core user
-        Wants=network-online.target
-        After=network-online.target install-host-packages.service
+        Wants=network-online.target chronyd.service
+        After=network-online.target chronyd.service install-host-packages.service
         ConditionPathExists=/usr/bin/git
         ConditionPathExists=!/home/core/infra-template/.git
 
@@ -44,6 +46,8 @@ systemd:
         User=core
         Group=core
         WorkingDirectory=/home/core
+        TimeoutStartSec=infinity
+        ExecStartPre=/usr/bin/chronyc waitsync
         ExecStart=/usr/bin/git clone "{{ shared.containers_git_repo }}" /home/core/infra-template
 
         [Install]

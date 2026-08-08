@@ -1,6 +1,6 @@
 .venv/
 **/services-dist/
-isos/*.iso
+isos/
 
 # back these up
 **/volumes/
