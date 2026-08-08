@@ -9,8 +9,8 @@ The current hosts are:
 
 - `vps1`: a 4C/8GB VPS running most of my apps/containers.
   This is the only publicly reachable host in my network.
-- `offsite`: a Raspberry Pi 4B behind NAT. It runs only the rootful Tailscale
-  client and Debian-based C&C container.
+- `offsite`: see [`offsite/README.md`](offsite/README.md) for its Raspberry Pi
+  hardware, services, installation, EDK2, and EEPROM details.
 
 This is a personal configuration rather than a turnkey deployment. It can be
 useful as a reference, but hostnames, addresses, domains, credentials, and
@@ -86,24 +86,15 @@ and exact destination disk ID. Build the host's Ignition config first, then its
 ISO:
 
 ```sh
-./build-butane.sh offsite
-./build-iso.sh offsite
+./build-butane.sh HOST
+./build-iso.sh HOST
 ```
 
-The result is `isos/offsite.iso`. Booting it automatically erases the device
-named by `DEST_DEVICE`, installs the current stable aarch64 Fedora CoreOS ISO,
-and embeds `offsite/butane/config.ign` without prompting. All installer ISOs
-skip the automatic reboot so they cannot immediately start another destructive
+The result is `isos/HOST.iso`. Booting it automatically erases the device named
+by `DEST_DEVICE`, installs the current stable Fedora CoreOS image, and embeds
+`HOST/butane/config.ign` without prompting. All installer ISOs skip the
+automatic reboot so they cannot immediately start another destructive
 installation; power off or reboot manually after removing the installer media.
-
-For `offsite`, the build also downloads pinned Raspberry Pi 4 EDK2 firmware,
-adds it to the live ISO, and adds the USB-SATA quirk to both the live and
-installed kernels. The post-install hook copies EDK2 from the mounted ISO onto
-the installed `EFI-SYSTEM` partition, so installation does not need network
-access. It then schedules a clean poweroff instead of rebooting, preventing the
-installer USB from starting the destructive installation again. Disconnect
-power, remove the microSD and installer USB, then reconnect power to boot the
-SSD.
 
 ## Render and deploy services
 

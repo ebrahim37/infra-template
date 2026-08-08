@@ -29,6 +29,7 @@ if [[ -n ${EDK2_VERSION:-} ]]; then
 	curl -fL "$url" -o "$tmp/edk2.zip"
 	mkdir "$tmp/edk2"
 	unzip -q "$tmp/edk2.zip" -d "$tmp/edk2"
+	cp "$dir/installer/startup.nsh" "$tmp/edk2/startup.nsh"
 	tar -C "$tmp/edk2" -czf "$tmp/rpi4-edk2.tar.gz" .
 	sed "s|@DEST_DEVICE@|$DEST_DEVICE|" "$dir/installer/rpi4-edk2-post.sh" > "$tmp/post.sh"
 	args+=(--post-install /work/post.sh)
@@ -39,9 +40,20 @@ coreos "${args[@]}" -o "/work/$out" "/work/$iso"
 
 if [[ -n ${EDK2_VERSION:-} ]]; then
 	podman run --rm --pull=always --security-opt label=disable -v "$tmp:/work" alpine \
-		sh -c 'apk add --no-cache xorriso >/dev/null && xorriso -indev /work/coreos.iso \
-			-outdev "/work/$1.iso" -map /work/rpi4-edk2.tar.gz /rpi4-edk2.tar.gz \
-			-boot_image any replay' sh "$host"
+		sh -c 'apk add --no-cache mtools xorriso >/dev/null \
+			&& xorriso -osirrox on -indev /work/coreos.iso \
+				-extract /images/efiboot.img /work/fcos-efiboot.img \
+			&& mkdir /work/fcos-efi \
+			&& mcopy -s -i /work/fcos-efiboot.img ::/EFI /work/fcos-efi \
+			&& truncate -s 32M /work/rpi4-edk2.img \
+			&& mformat -i /work/rpi4-edk2.img -v RPI-EDK2 :: \
+			&& mcopy -s -i /work/rpi4-edk2.img /work/edk2/* :: \
+			&& mcopy -s -i /work/rpi4-edk2.img /work/fcos-efi/EFI :: \
+			&& xorriso -indev /work/coreos.iso -outdev "/work/$1.iso" \
+				-boot_image any replay \
+				-map /work/rpi4-edk2.tar.gz /rpi4-edk2.tar.gz \
+				-append_partition 1 0xef /work/rpi4-edk2.img \
+				-boot_image any appended_part_as=mbr' sh "$host"
 fi
 
 install -D -m 0644 "$tmp/$host.iso" "$repo/isos/$host.iso"
