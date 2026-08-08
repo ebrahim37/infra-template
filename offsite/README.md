@@ -1,72 +1,18 @@
 # offsite
 
-`offsite` is a Raspberry Pi 4B behind NAT. It boots from a 2.5-inch SSD through
-a USB-SATA adapter. EEPROM partition walking must be enabled as described below.
+`offsite` is a Raspberry Pi 4B that boots Fedora CoreOS from a USB-SATA SSD.
+Setup has two steps: update the Pi EEPROM, then install FCOS.
 
-## FCOS installer
+## 1. Update the EEPROM
 
-[`installer.env`](installer.env) selects aarch64 FCOS, the exact Crucial SSD,
-PFTF EDK2 v1.52, and the `7825:a2a4` USB-SATA quirk. `DEST_DEVICE` is erased
-without confirmation.
-
-Build the unattended ISO from the repository root:
-
-```sh
-./build-butane.sh offsite
-./build-iso.sh offsite
-```
-
-This creates `isos/offsite.iso`. The build embeds Ignition, applies the USB
-quirk to the live and installed kernels, and adds
-`coreos.inst.skip_reboot`. It downloads EDK2 once and uses it for both:
-
-- MBR partition 1 with type `0xef`, containing PFTF, FCOS's `EFI/BOOT`
-  fallback loader, and `startup.nsh` to launch it explicitly before chaining
-  into the FCOS ISO on the same USB; and
-- `/rpi4-edk2.tar.gz` inside the ISO, which the post-install hook copies to the
-  SSD.
-
-`xorriso` appends the Pi boot partition while replaying the ISO's existing boot
-metadata.
-
-[`installer/rpi4-edk2-post.sh`](installer/rpi4-edk2-post.sh) receives the
-configured `DEST_DEVICE`, finds its `EFI-SYSTEM` partition, mounts it, extracts
-the EDK2 archive, syncs and unmounts it, then schedules a poweroff 30 seconds
-later. This makes the SSD Pi-bootable without downloading firmware during
-installation and prevents the unattended installer from running again.
-
-After applying the EEPROM update below, installation needs only:
-
-1. a USB stick containing `isos/offsite.iso`; and
-2. the target USB-SATA SSD.
-
-I use Rufus to write the ISO in DD/raw mode. On Linux, `dd` also works; replace
-`/dev/sdX` with the whole USB device, not a partition:
-
-```sh
-sudo dd if=isos/offsite.iso of=/dev/sdX bs=4M status=progress conv=fsync
-```
-
-Boot with both devices. The EEPROM finds the appended EDK2 partition, EDK2
-boots FCOS from the same USB, and FCOS installs to the SSD. After the scheduled
-poweroff, disconnect power, remove the installer USB, leave the SSD attached,
-and reconnect power.
-
-If the SSD is already Pi-bootable, selection between the two USB drives is not
-deterministic. Wipe its existing Pi boot partition before a reliable reinstall.
-
-## EEPROM USB image
-
-[`installer/rpi4-eeprom.conf`](installer/rpi4-eeprom.conf) enables EEPROM
-self-update, tries USB before microSD, and enables partition walking so the Pi
-can find FCOS on the SSD's later GPT partition.
-
-Build `isos/rpi4-eeprom-usb.img` with Podman from the repository root:
+From the repository root, use Podman and
+[`installer/rpi4-eeprom.conf`](installer/rpi4-eeprom.conf) to create
+`isos/rpi4-eeprom-usb.img`:
 
 ```bash
 source offsite/installer.env
 
-podman run --rm --security-opt label=disable \
+podman run --rm --pull=always --security-opt label=disable \
     -e EDK2_VERSION="$EDK2_VERSION" -v "$PWD:/repo" -w /tmp \
     debian:stable-slim sh -c '
 set -eu
@@ -88,23 +34,46 @@ mcopy -s -i /repo/isos/rpi4-eeprom-usb.img@@1048576 payload/* ::
 '
 ```
 
-I use Rufus to write this raw `.img`; `dd` is also suitable:
+The config enables USB-first boot and partition walking so the Pi can find
+EDK2 on the FCOS SSD.
+
+Write the image with Rufus in DD/raw mode, or on Linux:
 
 ```sh
 sudo dd if=isos/rpi4-eeprom-usb.img of=/dev/sdX bs=4M status=progress conv=fsync
 ```
 
-To update, power off, disconnect other storage, and attach only the EEPROM USB.
-Power on, wait at least two minutes without interrupting power, then power off,
-remove it, and boot with only the SSD. This relies on the existing EEPROM
-allowing self-update; otherwise use the official microSD recovery image.
+Power off the Pi, disconnect all other storage, attach only this USB, and power
+on. Wait at least two minutes without interrupting power, then power off and
+remove it. If USB self-update is disabled in the existing EEPROM, use the
+official microSD recovery image instead.
 
-## First boot
+## 2. Install FCOS
 
-The package installation and Git clone wait for `chronyd` because the Pi has no
-battery-backed clock and incorrect time breaks TLS validation. After FCOS has
-finished its first-boot package layering and rebooted, install the SOPS age key
-and deploy the services:
+Build the unattended installer:
+
+```sh
+./build-butane.sh offsite
+./build-iso.sh offsite
+```
+
+Write `isos/offsite.iso` with Rufus in DD/raw mode, or on Linux:
+
+```sh
+sudo dd if=isos/offsite.iso of=/dev/sdX bs=4M status=progress conv=fsync
+```
+
+The ISO contains PFTF EDK2, the FCOS EFI loader, Ignition, and the USB-SATA
+quirk. Its post-install hook copies EDK2 to the SSD and powers off instead of
+rebooting. `DEST_DEVICE` in [`installer.env`](installer.env) is erased without
+confirmation.
+
+Attach the installer USB and target SSD, then power on. After the Pi powers
+off, disconnect power, remove the installer USB, and boot with only the SSD.
+If the SSD is already Pi-bootable, wipe its boot partition first so it cannot
+compete with the installer USB.
+
+After first boot, install the SOPS age key and deploy the services:
 
 ```sh
 cd ~/infra-template

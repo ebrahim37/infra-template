@@ -1,149 +1,51 @@
-# Fedora CoreOS Configs
+# Fedora CoreOS configs
 
-This repository contains the full configurations of my 'server' hosts. It uses
-[Butane](https://coreos.github.io/butane/) to build the host's Ignition config,
-and [Copier](https://copier.readthedocs.io/) with Jinja to render host-specific
-files, and Podman Quadlet units to run the service stack.
+Butane/Ignition configs and Podman Quadlet services for:
 
-The current hosts are:
+- `vps1`, the public VPS running the main service stack; and
+- `offsite`, a Raspberry Pi 4B documented in
+  [`offsite/README.md`](offsite/README.md).
 
-- `vps1`: a 4C/8GB VPS running most of my apps/containers.
-  This is the only publicly reachable host in my network.
-- `offsite`: see [`offsite/README.md`](offsite/README.md) for its Raspberry Pi
-  hardware, services, installation, EDK2, and EEPROM details.
+This is a personal configuration, not a turnkey deployment.
 
-This is a personal configuration rather than a turnkey deployment. It can be
-useful as a reference, but hostnames, addresses, domains, credentials, and
-service choices are specific to my environment.
+## Build
 
-## Layout
+The scripts use Podman, so Butane, Copier, SOPS, and age do not need to be
+installed on the host.
 
-- `build-butane.sh` renders a host's Butane template and compiles it to
-  Ignition.
-- `build-services.sh` renders and deploys a host's rootful and rootless Quadlet
-  trees.
-- `build-iso.sh` builds a host-specific, unattended Fedora CoreOS installer ISO.
-- `shared/` contains shell helpers and configuration copied into the C&C (command & control)
-  containers of all hosts.
-- `HOST/butane/` (eg. `vps1/butane/`) contains the Fedora CoreOS provisioning template and generated
-  `config.ign`.
-- `HOST/services/root/` contains privileged host services, including the C&C
-  container and Tailscale client.
-- `HOST/services/rootless/` contains the application stack, eg. Caddy, Blocky,
-  Headscale/Headplane, etc.
-- `HOST/volumes/` holds persistent service data and is intentionally ignored by
-  Git.
+```sh
+./build-butane.sh HOST
+./build-iso.sh HOST
+./build-services.sh HOST
+```
 
-Rendered service trees are written to `HOST/services-dist/` and are also
-ignored by Git.
+- `build-butane.sh` renders `HOST/butane/config.ign`.
+- `build-iso.sh` creates the unattended `isos/HOST.iso`. It erases the
+  `DEST_DEVICE` configured in `HOST/installer.env` without confirmation.
+- `build-services.sh` renders and deploys the host's Quadlet files. The argument
+  must match `/etc/hostname`.
 
-## Secrets
-
-Secrets live in `secrets.yaml` and are encrypted with
-[SOPS](https://getsops.io/) and age. The corresponding age identity must be
-available at:
+After installing a host, place the SOPS age identity at:
 
 ```text
 ~/.config/sops/age/keys.txt
 ```
 
-Only keys prefixed with `enc_priv_` are encrypted. During rendering they are
-exposed to templates as `priv_...` variables. Private variables are explicitly
-rejected by the Butane build, so credentials cannot be embedded in the
-generated Ignition config by accident. `build-butane.sh` extracts only the
-unencrypted public variables directly from `secrets.yaml`; it never invokes
-SOPS or mounts the age identity.
-
-Keep the age identity out of this repository and back it up separately. The
-ignored `HOST/volumes/` directories also need their own backup strategy.
-
-## Build the Ignition config
-
-All build scripts need Podman. `build-services.sh` also needs the age identity
-file, but SOPS and age are installed and used inside Podman.
-The Ignition config also installs SOPS and age on the host for
-interactive administration, but the build scripts do not depend on those host
-binaries. Copier and Butane do not need to be installed directly.
-
-```sh
-./build-butane.sh HOST
-```
-
-The result is written to `HOST/butane/config.ign`. Supply that file when
-provisioning Fedora CoreOS through the hosting provider or installer. On first
-boot, the Ignition config:
-
-- configures the `core` user and SSH access;
-- applies the host network and system settings;
-- layers the required host packages;
-- installs SOPS; and
-- clones this repository to `/home/core/infra-template`.
-
-## Build an unattended installer ISO
-
-Each ISO-installable host has an `installer.env` containing its architecture
-and exact destination disk ID. Build the host's Ignition config first, then its
-ISO:
-
-```sh
-./build-butane.sh HOST
-./build-iso.sh HOST
-```
-
-The result is `isos/HOST.iso`. Booting it automatically erases the device named
-by `DEST_DEVICE`, installs the current stable Fedora CoreOS image, and embeds
-`HOST/butane/config.ign` without prompting. All installer ISOs skip the
-automatic reboot so they cannot immediately start another destructive
-installation; power off or reboot manually after removing the installer media.
-
-## Render and deploy services
-
-Right after installing and the reboot caused by `rpm-ostree install`, place the
-age identity at the path shown above. Then run the deployment from that host:
+Then deploy its services:
 
 ```sh
 cd ~/infra-template
 ./build-services.sh HOST
 ```
 
-The script refuses to deploy unless its host argument matches `/etc/hostname`.
-It mounts `secrets.yaml` and the age identity read-only into an ephemeral
-container, installs SOPS and age there, decrypts the data inside the container,
-and renders all Jinja templates. The decrypted temporary file disappears with
-the container. The script then synchronizes the resulting Quadlet files to:
+## Layout
 
-```text
-/etc/containers/systemd/HOST-root/
-~/.config/containers/systemd/HOST-rootless/
-```
+- `HOST/butane/`: Butane template and generated Ignition config.
+- `HOST/services/root/`: rootful Quadlets.
+- `HOST/services/rootless/`: rootless Quadlets.
+- `HOST/volumes/`: ignored persistent service data.
+- `shared/`: files shared by the C&C containers.
+- `secrets.yaml`: SOPS-encrypted service secrets.
 
-It then reloads the system and user systemd managers. Units can be managed with
-the usual commands, for example:
-
-```sh
-sudo systemctl start cnc.service
-systemctl --user start caddy.service
-```
-
-The C&C container includes helper commands for day-to-day administration:
-
-- `list-services`, `start-services`, and `stop-services` manage the complete
-  rootful/rootless stack.
-- `update-services` pulls the repository and reruns `build-services.sh` for the
-  current host.
-- `update-cnc` rebuilds the administration container and offers to restart it.
-- `run-host` and `run-host-root` execute commands in the Fedora CoreOS host
-  namespaces from inside the C&C container.
-
-## Updating
-
-For a normal configuration update on the server:
-
-```sh
-cd ~/infra-template
-git pull --ff-only
-./build-services.sh HOST
-```
-
-Rebuilding the C&C container requires a restart and will reset its container-local state (including `/home` inside the container). Its
-persistent data (`/data` inside the container) belongs under `HOST/volumes/cnc-data`.
+Rendered service trees are written to the ignored `HOST/services-dist/`
+directories.
