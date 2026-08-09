@@ -16,7 +16,13 @@ Host homelab
 
 Host offsite
 	HostName 100.64.0.6
-	User armtix
+	User core
+	ForwardAgent yes
+
+Host offsitec
+	HostName 100.64.0.6
+	Port 222
+	User ebrahim
 	ForwardAgent yes
 
 Host pc
