@@ -10,10 +10,26 @@ fi
 
 cnc_root="/proc/$host_pid/root"
 
-run-host \
-	"$cnc_root/usr/lib64/ld-linux-x86-64.so.2" \
-	--library-path "$cnc_root/usr/lib" \
-	"$cnc_root/usr/bin/btop" \
-	--config "$cnc_root/home/ebrahim/.config/btop/btop.conf" \
-	--force-utf \
-	"$@"
+run-host /bin/sh -eu -c '
+	cnc_root=$1
+	shift
+
+	for loader in \
+		"$cnc_root"/lib/ld-musl-*.so.1 \
+		"$cnc_root"/usr/lib/ld-musl-*.so.1 \
+		"$cnc_root"/usr/lib64/ld-linux-*.so.* \
+		"$cnc_root"/usr/lib/ld-linux-*.so.* \
+		"$cnc_root"/lib/*/ld-linux-*.so.*
+	do
+		[ -x "$loader" ] || continue
+		exec "$loader" \
+			--library-path "$cnc_root/lib:$cnc_root/usr/lib" \
+			"$cnc_root/usr/bin/btop" \
+			--config "$cnc_root/home/ebrahim/.config/btop/btop.conf" \
+			--force-utf \
+			"$@"
+	done
+
+	echo "btop: could not find the CNC dynamic loader" >&2
+	exit 1
+' sh "$cnc_root" "$@"

@@ -11,7 +11,6 @@ RUN pacman -Syu --noconfirm --needed \
 	less \
 	ncdu \
 	neovim \
-	nodejs \
 	npm \
 	openssh \
 	plocate \
@@ -34,37 +33,31 @@ RUN groupadd -g 1000 ebrahim \
 		> /etc/sudoers.d/10-wheel-nopasswd \
 	&& printf 'export SYSTEMD_PAGER=cat\n' > /etc/profile.d/systemd-pager.sh
 
-RUN install -d -m 0755 /etc/ssh/sshd_config.d /etc/systemd/system/sshd.service.d \
-	&& printf '%s\n' \
+RUN printf '%s\n' \
 		'Port 222' \
 		'PermitRootLogin no' \
 		'PubkeyAuthentication yes' \
 		'AuthenticationMethods publickey' \
 		'PasswordAuthentication no' \
 		'KbdInteractiveAuthentication no' \
+		'HostKey /host/etc/ssh/ssh_host_ed25519_key' \
+		'HostKey /host/etc/ssh/ssh_host_ecdsa_key' \
+		'HostKey /host/etc/ssh/ssh_host_rsa_key' \
 		> /etc/ssh/sshd_config.d/10-cnc.conf \
-	&& printf '%s\n' \
-		'[Service]' \
-		'ExecStartPre=/bin/sh -c "cp /host/etc/ssh/ssh_host_* /etc/ssh/ 2>/dev/null || true; chmod 0600 /etc/ssh/ssh_host_*_key 2>/dev/null || true"' \
-		> /etc/systemd/system/sshd.service.d/10-host-keys.conf \
 	&& install -m 0444 /dev/null /etc/machine-id \
-	&& ssh-keygen -A \
 	&& systemctl enable sshd.service
 
 COPY shared/vimrc /etc/vimrc
 COPY --chown=ebrahim:ebrahim shared/ssh_config /home/ebrahim/.ssh/config
 COPY --chown=ebrahim:ebrahim shared/home/ /home/ebrahim/
 COPY --chown=ebrahim:ebrahim home/ /home/ebrahim/
-RUN install -d -m 0700 -o ebrahim -g ebrahim /home/ebrahim/.ssh \
-	&& printf '%s\n' '{{ shared.ssh_authorized_key }}' > /home/ebrahim/.ssh/authorized_keys \
+RUN printf '%s\n' '{{ shared.ssh_authorized_key }}' > /home/ebrahim/.ssh/authorized_keys \
 	&& chown ebrahim:ebrahim /home/ebrahim/.ssh/authorized_keys \
-	&& chmod 0600 /home/ebrahim/.ssh/authorized_keys /home/ebrahim/.ssh/config \
 	&& install -d -m 0700 -o ebrahim -g ebrahim /home/ebrahim/.config/sops/age \
 	&& install -d -m 0755 -o ebrahim -g ebrahim /home/ebrahim/ssl \
 	&& ln -s /host/home/core/infra-template /home/ebrahim/infra-template \
 	&& ln -s /host/home/core/infra-template/vps1/volumes/caddy-data/caddy/certificates/acme-v02.api.letsencrypt.org-directory/wildcard_.ebra.dev/wildcard_.ebra.dev.crt /home/ebrahim/ssl/fullchain.pem \
 	&& ln -s /host/home/core/infra-template/vps1/volumes/caddy-data/caddy/certificates/acme-v02.api.letsencrypt.org-directory/wildcard_.ebra.dev/wildcard_.ebra.dev.key /home/ebrahim/ssl/privkey.pem \
-	&& chown -h ebrahim:ebrahim /home/ebrahim/ssl/fullchain.pem /home/ebrahim/ssl/privkey.pem \
 	&& chmod +x /home/ebrahim/scripts/* \
 	&& rm -f /home/ebrahim/.bash_logout
 

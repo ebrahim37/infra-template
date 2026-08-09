@@ -12,8 +12,9 @@ exec sudo nsenter \
 	--uts=/host/proc/1/ns/uts \
 	--ipc=/host/proc/1/ns/ipc \
 	--net=/host/proc/1/ns/net \
+	-r/host \
 	-- \
-	chroot /host /usr/bin/env -i \
+	/usr/bin/env -i \
 		TERM="${TERM:-xterm-256color}" \
 		SYSTEMD_PAGER="${SYSTEMD_PAGER:-cat}" \
 		HOME=/root \

@@ -8,6 +8,7 @@
 
 " This line should not be removed as it ensures that various options are
 " properly set to work with the Vim-related packages.
+set nocompatible
 runtime! archlinux.vim
 
 " when archlinux.vim doesn't exist, manually override the undo/backup dirs
@@ -79,17 +80,6 @@ if has('langmap') && exists('+langremap')
 	set nolangremap
 endif
 
-function! s:osc52_copy(reg, type, lines) abort
-	let l:lines = a:type ==# 'V' ? a:lines + [''] : a:lines
-	call echoraw(nr2char(27) . ']52;c;' . base64_encode(str2blob(l:lines)) . nr2char(7))
-endfunction
-
-let v:clipproviders['osc52'] = {
-	\ 'copy': {
-	\   '+': function('s:osc52_copy'),
-	\   '*': function('s:osc52_copy'),
-	\ },
-	\ }
-
+packadd osc52
 set clipmethod^=osc52
 set clipboard^=unnamedplus

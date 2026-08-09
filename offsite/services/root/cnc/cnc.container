@@ -1,5 +1,5 @@
 [Unit]
-Description=Debian C&C container
+Description=Alpine C&C container
 Requires=network-online.target
 After=network-online.target
 
@@ -23,8 +23,7 @@ Volume=/var/tmp/cnc-containerd-rootful:/var/lib/containerd
 UserNS=host
 PodmanArgs=--cgroupns=private
 PodmanArgs=--privileged
-PodmanArgs=--systemd=always
-StopSignal=SIGRTMIN+3
+StopSignal=SIGTERM
 
 [Service]
 TimeoutStartSec=30min

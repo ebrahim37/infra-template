@@ -1,5 +1,5 @@
 [Unit]
-Description=Build Debian C&C image
+Description=Build Alpine C&C image
 
 [Build]
 ImageTag=localhost/cnc:latest
