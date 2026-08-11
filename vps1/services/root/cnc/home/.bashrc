@@ -24,5 +24,5 @@ alias hssc="run-host-root systemctl"
 alias hjjc="run-host journalctl -u"
 
 alias clean-cache="ya -Yc --noconfirm && ya -Scc --noconfirm && pnpm store prune"
-alias pa="run-host podman attach "
+alias pa="run-host podman attach"
 alias caddy-reload="run-host podman exec -w /etc/caddy caddy caddy reload"

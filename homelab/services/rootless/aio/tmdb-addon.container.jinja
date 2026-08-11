@@ -1,0 +1,20 @@
+[Unit]
+Description=TMDB addon
+Requires=network-online.target
+After=network-online.target
+
+[Container]
+ContainerName=tmdb-addon
+Image=docker.io/mrcanelas/tmdb-addon
+Pull=newer
+Network=pasta:--map-gw
+PublishPort=1337:1337/tcp
+Environment=HOST_NAME=http://169.254.1.2:1337
+Environment="TMDB_API={{ homelab.priv_tmdb_api_key }}"
+Environment="FANART_API={{ homelab.priv_fanart_api_key }}"
+
+[Service]
+TimeoutStartSec=15min
+
+[Install]
+WantedBy=default.target

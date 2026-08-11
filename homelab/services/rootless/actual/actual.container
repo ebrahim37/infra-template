@@ -1,0 +1,18 @@
+[Unit]
+Description=Actual Budget server
+Requires=network-online.target
+After=network-online.target
+
+[Container]
+ContainerName=actual
+Image=docker.io/actualbudget/actual-server:latest-alpine
+Pull=newer
+PublishPort=5006:5006
+Volume=/home/core/infra-template/homelab/volumes/actual-data:/data:Z
+
+[Service]
+TimeoutStartSec=15min
+ExecStartPre=/usr/bin/mkdir -p /home/core/infra-template/homelab/volumes/actual-data
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,80 @@
+FROM docker.io/library/archlinux:base
+
+# ydl script needs rsgain (aur), mid3v2 (python-mutagen) and yt-dlp
+# yt-dlp needs ffmpeg
+# picard script needs rsgain and rsync
+RUN pacman -Syu --noconfirm --needed \
+	age \
+	base-devel \
+	btop \
+	bubblewrap \
+	croc \
+	curl \
+	eza \
+	ffmpeg \
+	git \
+	less \
+	ncdu \
+	neovim \
+	npm \
+	openssh \
+	plocate \
+	pnpm \
+	podman \
+	python \
+	python-mutagen \
+	ripgrep \
+	rsync \
+	screen \
+	sops \
+	unzip \
+	vim \
+	yt-dlp
+
+RUN groupadd -g 1000 ebrahim \
+	&& useradd -m -u 1000 -g 1000 -G wheel -s /bin/bash ebrahim \
+	&& setcap cap_setuid=ep /usr/bin/newuidmap \
+	&& setcap cap_setgid=ep /usr/bin/newgidmap \
+	&& printf '%s\n' \
+		'Defaults env_keep += "SYSTEMD_PAGER"' \
+		'%wheel ALL=(ALL:ALL) NOPASSWD: ALL' \
+		> /etc/sudoers.d/10-wheel-nopasswd \
+	&& printf 'export SYSTEMD_PAGER=cat\n' > /etc/profile.d/systemd-pager.sh
+
+RUN printf '%s\n' \
+		'Port 222' \
+		'PermitRootLogin no' \
+		'PubkeyAuthentication yes' \
+		'AuthenticationMethods publickey' \
+		'PasswordAuthentication no' \
+		'KbdInteractiveAuthentication no' \
+		'HostKey /host/etc/ssh/ssh_host_ed25519_key' \
+		'HostKey /host/etc/ssh/ssh_host_ecdsa_key' \
+		'HostKey /host/etc/ssh/ssh_host_rsa_key' \
+		> /etc/ssh/sshd_config.d/10-cnc.conf \
+	&& install -m 0444 /dev/null /etc/machine-id \
+	&& systemctl enable sshd.service
+
+COPY shared/vimrc /etc/vimrc
+COPY --chown=ebrahim:ebrahim shared/ssh_config /home/ebrahim/.ssh/config
+COPY --chown=ebrahim:ebrahim shared/home/ /home/ebrahim/
+COPY --chown=ebrahim:ebrahim home/ /home/ebrahim/
+RUN printf '%s\n' '{{ shared.ssh_authorized_key }}' > /home/ebrahim/.ssh/authorized_keys \
+	&& chown ebrahim:ebrahim /home/ebrahim/.ssh/authorized_keys \
+	&& install -d -m 0700 -o ebrahim -g ebrahim /home/ebrahim/.config/sops/age \
+	&& install -d -m 0755 -o ebrahim -g ebrahim /home/ebrahim/media/music/library \
+	&& ln -s /host/home/core/infra-template /home/ebrahim/infra-template \
+	&& chmod +x /home/ebrahim/scripts/* \
+	&& rm -f /home/ebrahim/.bash_logout
+
+RUN git clone --depth=1 https://aur.archlinux.org/yay-bin.git /tmp/yay-bin \
+	&& chown -R ebrahim:ebrahim /tmp/yay-bin \
+	&& su - ebrahim -c 'cd /tmp/yay-bin && makepkg -i --noconfirm --cleanbuild --clean' \
+	&& rm -rf /tmp/yay-bin \
+	&& su - ebrahim -c '/home/ebrahim/scripts/ya -S --noconfirm --needed rsgain' \
+	&& su - ebrahim -c '/home/ebrahim/scripts/ya -Yc --noconfirm && /home/ebrahim/scripts/ya -Scc --noconfirm' \
+	&& su - ebrahim -c 'PNPM_HOME=/home/ebrahim/.local/share/pnpm PATH=/home/ebrahim/.local/share/pnpm/bin:/usr/bin pnpm add --global @openai/codex http-server'
+
+STOPSIGNAL SIGRTMIN+3
+
+ENTRYPOINT ["/sbin/init"]

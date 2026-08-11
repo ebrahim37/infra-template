@@ -1,0 +1,24 @@
+[Unit]
+Description=Navidrome music server
+Requires=network-online.target
+After=network-online.target
+
+[Container]
+ContainerName=navidrome
+Image=docker.io/deluan/navidrome
+Pull=newer
+UserNS=keep-id
+PublishPort=4533:4533
+Volume=/home/core/infra-template/homelab/volumes/navidrome-music:/music:ro,Z
+Volume=/home/core/infra-template/homelab/volumes/navidrome-music2:/music2:ro,Z
+Volume=/home/core/infra-template/homelab/volumes/navidrome-data:/data:Z
+Environment=ND_LOGLEVEL=info
+
+[Service]
+TimeoutStartSec=15min
+ExecStartPre=/usr/bin/mkdir -p /home/core/infra-template/homelab/volumes/navidrome-music
+ExecStartPre=/usr/bin/mkdir -p /home/core/infra-template/homelab/volumes/navidrome-music2
+ExecStartPre=/usr/bin/mkdir -p /home/core/infra-template/homelab/volumes/navidrome-data
+
+[Install]
+WantedBy=default.target

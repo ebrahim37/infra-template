@@ -1,0 +1,14 @@
+[Unit]
+Description=Build Arch systemd C&C image
+
+[Build]
+ImageTag=localhost/cnc:latest
+File=./Containerfile
+SetWorkingDirectory=unit
+Pull=newer
+
+[Service]
+TimeoutStartSec=30min
+
+[Install]
+WantedBy=multi-user.target

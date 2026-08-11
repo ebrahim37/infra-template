@@ -1,0 +1,121 @@
+variant: fcos
+version: 1.7.0
+
+passwd:
+  users:
+    - name: core
+      groups:
+        - render
+        - video
+      ssh_authorized_keys:
+        - {{ shared.ssh_authorized_key }}
+
+systemd:
+  units:
+    - name: install-host-packages.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Layer host packages with rpm-ostree
+        Wants=network-online.target
+        After=network-online.target
+        Before=zincati.service
+        ConditionPathExists=!/var/lib/%N.stamp
+
+        [Service]
+        Type=oneshot
+        RemainAfterExit=yes
+        ExecStart=/usr/bin/rpm-ostree install -y --allow-inactive age git-core
+        ExecStart=/bin/sh -eu -c 'sops_tmp=$$(mktemp); trap "rm -f $$sops_tmp" EXIT; sops_version=$$(curl -fsSIL -o /dev/null -w "%%{url_effective}" https://github.com/getsops/sops/releases/latest | sed "s#.*/##"); curl -fsSL "https://github.com/getsops/sops/releases/download/$${sops_version}/sops-$${sops_version}.linux.amd64" -o "$$sops_tmp"; install -D -m 0755 "$$sops_tmp" /usr/local/bin/sops'
+        ExecStart=/bin/touch /var/lib/%N.stamp
+        ExecStart=/bin/systemctl --no-block reboot
+
+        [Install]
+        WantedBy=multi-user.target
+    - name: clone-containers-repo.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Clone containers git repo for core user
+        Wants=network-online.target
+        After=network-online.target install-host-packages.service
+        ConditionPathExists=/usr/bin/git
+        ConditionPathExists=!/home/core/infra-template/.git
+
+        [Service]
+        Type=oneshot
+        User=core
+        Group=core
+        WorkingDirectory=/home/core
+        ExecStart=/usr/bin/git clone "{{ shared.containers_git_repo }}" /home/core/infra-template
+
+        [Install]
+        WantedBy=multi-user.target
+
+storage:
+  directories:
+    - path: /home/core/.config
+      mode: 0700
+      user:
+        name: core
+      group:
+        name: core
+    - path: /home/core/.config/sops
+      mode: 0700
+      user:
+        name: core
+      group:
+        name: core
+    - path: /home/core/.config/sops/age
+      mode: 0700
+      user:
+        name: core
+      group:
+        name: core
+  files:
+    - path: /etc/hostname
+      overwrite: true
+      mode: 0644
+      contents:
+        inline: {{ homelab.hostname }}
+    - path: /etc/sysctl.d/90-containers.conf
+      mode: 0644
+      contents:
+        inline: |
+          net.ipv4.ip_forward = 1
+          net.ipv6.conf.all.forwarding = 1
+          net.ipv6.conf.default.forwarding = 1
+          net.ipv4.conf.all.src_valid_mark = 1
+    - path: /etc/systemd/zram-generator.conf
+      mode: 0644
+      contents:
+        inline: |
+          # this config file enables a /dev/zram0 device with the default settings
+          [zram0]
+    - path: /etc/profile.d/systemd-pager.sh
+      mode: 0644
+      contents:
+        inline: |
+          export SYSTEMD_PAGER=cat
+    - path: /etc/subuid
+      overwrite: true
+      mode: 0644
+      contents:
+        inline: |
+          core:100000:65536
+    - path: /etc/subgid
+      overwrite: true
+      mode: 0644
+      contents:
+        inline: |
+          core:100000:65536
+    - path: /home/core/.hushlogin
+      mode: 0644
+      user:
+        name: core
+      group:
+        name: core
+    # starts core's user systemd manager without an interactive login
+    # needed for rootless Quadlets to start at boot
+    - path: /var/lib/systemd/linger/core
+      mode: 0644

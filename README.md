@@ -2,9 +2,11 @@
 
 Butane/Ignition configs and Podman Quadlet services for:
 
-- `vps1`, the public VPS running the main service stack; and
+- `vps1`, the public VPS running the main service stack;
 - `offsite`, a Raspberry Pi 4B documented in
-  [`offsite/README.md`](offsite/README.md).
+  [`offsite/README.md`](offsite/README.md); and
+- `homelab`, the x86_64 home media and application server documented in
+  [`homelab/README.md`](homelab/README.md).
 
 This is a personal configuration, not a turnkey deployment.
 

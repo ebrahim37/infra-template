@@ -1,0 +1,26 @@
+[Unit]
+Description=Jellyfin media server
+Requires=aiostreams.container
+After=aiostreams.container
+
+[Container]
+ContainerName=jellyfin
+Image=docker.io/jellyfin/jellyfin
+Pull=newer
+UserNS=keep-id
+GroupAdd=keep-groups
+PublishPort=8096:8096/tcp
+PublishPort=7359:7359/udp
+AddDevice=/dev/dri
+Volume=/home/core/infra-template/homelab/volumes/jellyfin-cache:/cache:Z
+Volume=/home/core/infra-template/homelab/volumes/jellyfin-config:/config:Z
+Volume=/home/core/infra-template/homelab/volumes/gelato-data:/data/gelato:Z
+
+[Service]
+TimeoutStartSec=15min
+ExecStartPre=/usr/bin/mkdir -p /home/core/infra-template/homelab/volumes/jellyfin-cache
+ExecStartPre=/usr/bin/mkdir -p /home/core/infra-template/homelab/volumes/jellyfin-config
+ExecStartPre=/usr/bin/mkdir -p /home/core/infra-template/homelab/volumes/gelato-data
+
+[Install]
+WantedBy=default.target

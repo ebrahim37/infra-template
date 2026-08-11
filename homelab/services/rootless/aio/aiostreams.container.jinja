@@ -1,0 +1,30 @@
+[Unit]
+Description=AIOStreams
+Requires=comet.container tmdb-addon.container
+After=comet.container tmdb-addon.container
+
+[Container]
+ContainerName=aiostreams
+Image=docker.io/viren070/aiostreams
+Pull=newer
+Network=pasta:--map-gw
+PublishPort=3000:3000/tcp
+Volume=/home/core/infra-template/homelab/volumes/aiostreams-data:/app/data:Z
+Environment=ADDON_ID=aiostreams.ebrahim.local
+Environment=BASE_URL=http://169.254.1.2:3000
+Environment="SECRET_KEY={{ homelab.priv_aiostreams_secret_key }}"
+Environment="TEMPLATE_URLS=[\"https://git.tamtaro.de/complete.json\"]"
+Environment=COMET_URL=http://169.254.1.2:8000
+Environment="COMET_PUBLIC_API_TOKEN={{ homelab.priv_comet_public_api_token }}"
+Environment=TMDB_ADDON_URL=http://169.254.1.2:1337
+Environment=LOG_LEVEL=http
+Environment=LOG_FORMAT=text
+Environment=LOG_SENSITIVE_INFO=false
+Environment=LOG_TIMEZONE=America/Toronto
+
+[Service]
+TimeoutStartSec=15min
+ExecStartPre=/usr/bin/mkdir -p /home/core/infra-template/homelab/volumes/aiostreams-data
+
+[Install]
+WantedBy=default.target

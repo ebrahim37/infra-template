@@ -1,0 +1,20 @@
+[Unit]
+Description=Remux
+Requires=aiostreams.container
+After=aiostreams.container
+
+[Container]
+ContainerName=remux
+Image=ghcr.io/lostb1t/remux
+Pull=newer
+GroupAdd=keep-groups
+PublishPort=58818:3000
+AddDevice=/dev/dri
+Volume=/home/core/infra-template/homelab/volumes/remux-data:/data:Z
+
+[Service]
+TimeoutStartSec=15min
+ExecStartPre=/usr/bin/mkdir -p /home/core/infra-template/homelab/volumes/remux-data
+
+[Install]
+WantedBy=default.target

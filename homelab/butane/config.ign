@@ -1,0 +1,134 @@
+{
+  "ignition": {
+    "version": "3.6.0"
+  },
+  "passwd": {
+    "users": [
+      {
+        "groups": [
+          "render",
+          "video"
+        ],
+        "name": "core",
+        "sshAuthorizedKeys": [
+          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICADuTaD1i54A/489uTWBSbh3RIo92DPVh8MZ2cGRGF3"
+        ]
+      }
+    ]
+  },
+  "storage": {
+    "directories": [
+      {
+        "group": {
+          "name": "core"
+        },
+        "path": "/home/core/.config",
+        "user": {
+          "name": "core"
+        },
+        "mode": 448
+      },
+      {
+        "group": {
+          "name": "core"
+        },
+        "path": "/home/core/.config/sops",
+        "user": {
+          "name": "core"
+        },
+        "mode": 448
+      },
+      {
+        "group": {
+          "name": "core"
+        },
+        "path": "/home/core/.config/sops/age",
+        "user": {
+          "name": "core"
+        },
+        "mode": 448
+      }
+    ],
+    "files": [
+      {
+        "overwrite": true,
+        "path": "/etc/hostname",
+        "contents": {
+          "compression": "",
+          "source": "data:,homelab"
+        },
+        "mode": 420
+      },
+      {
+        "path": "/etc/sysctl.d/90-containers.conf",
+        "contents": {
+          "compression": "gzip",
+          "source": "data:;base64,H4sIAAAAAAAC/8pLLdHLLCgz0cssiE/LLypPLEpRsFUw5IKKm+kl5+el6SXm5OhBZTPz0rEoSElNSyzNKcGhyARhSnFRcnxZYk5mSnxuYlE2WBEgAAD//7+i4OCDAAAA"
+        },
+        "mode": 420
+      },
+      {
+        "path": "/etc/systemd/zram-generator.conf",
+        "contents": {
+          "compression": "",
+          "source": "data:;base64,IyB0aGlzIGNvbmZpZyBmaWxlIGVuYWJsZXMgYSAvZGV2L3pyYW0wIGRldmljZSB3aXRoIHRoZSBkZWZhdWx0IHNldHRpbmdzClt6cmFtMF0K"
+        },
+        "mode": 420
+      },
+      {
+        "path": "/etc/profile.d/systemd-pager.sh",
+        "contents": {
+          "compression": "",
+          "source": "data:,export%20SYSTEMD_PAGER%3Dcat%0A"
+        },
+        "mode": 420
+      },
+      {
+        "overwrite": true,
+        "path": "/etc/subuid",
+        "contents": {
+          "compression": "",
+          "source": "data:,core%3A100000%3A65536%0A"
+        },
+        "mode": 420
+      },
+      {
+        "overwrite": true,
+        "path": "/etc/subgid",
+        "contents": {
+          "compression": "",
+          "source": "data:,core%3A100000%3A65536%0A"
+        },
+        "mode": 420
+      },
+      {
+        "group": {
+          "name": "core"
+        },
+        "path": "/home/core/.hushlogin",
+        "user": {
+          "name": "core"
+        },
+        "mode": 420
+      },
+      {
+        "path": "/var/lib/systemd/linger/core",
+        "mode": 420
+      }
+    ]
+  },
+  "systemd": {
+    "units": [
+      {
+        "contents": "[Unit]\nDescription=Layer host packages with rpm-ostree\nWants=network-online.target\nAfter=network-online.target\nBefore=zincati.service\nConditionPathExists=!/var/lib/%N.stamp\n\n[Service]\nType=oneshot\nRemainAfterExit=yes\nExecStart=/usr/bin/rpm-ostree install -y --allow-inactive age git-core\nExecStart=/bin/sh -eu -c 'sops_tmp=$$(mktemp); trap \"rm -f $$sops_tmp\" EXIT; sops_version=$$(curl -fsSIL -o /dev/null -w \"%%{url_effective}\" https://github.com/getsops/sops/releases/latest | sed \"s#.*/##\"); curl -fsSL \"https://github.com/getsops/sops/releases/download/$${sops_version}/sops-$${sops_version}.linux.amd64\" -o \"$$sops_tmp\"; install -D -m 0755 \"$$sops_tmp\" /usr/local/bin/sops'\nExecStart=/bin/touch /var/lib/%N.stamp\nExecStart=/bin/systemctl --no-block reboot\n\n[Install]\nWantedBy=multi-user.target\n",
+        "enabled": true,
+        "name": "install-host-packages.service"
+      },
+      {
+        "contents": "[Unit]\nDescription=Clone containers git repo for core user\nWants=network-online.target\nAfter=network-online.target install-host-packages.service\nConditionPathExists=/usr/bin/git\nConditionPathExists=!/home/core/infra-template/.git\n\n[Service]\nType=oneshot\nUser=core\nGroup=core\nWorkingDirectory=/home/core\nExecStart=/usr/bin/git clone \"https://github.com/ebrahim37/infra-template.git\" /home/core/infra-template\n\n[Install]\nWantedBy=multi-user.target\n",
+        "enabled": true,
+        "name": "clone-containers-repo.service"
+      }
+    ]
+  }
+}

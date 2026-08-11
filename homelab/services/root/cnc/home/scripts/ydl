@@ -1,0 +1,24 @@
+#!/bin/sh
+set -eu
+
+if [ "$#" -ne 3 ]; then
+	echo "Usage: $0 <URL> <Artist> <Title>"
+	exit 1
+fi
+
+url=$1
+artist=$2
+title=$3
+album="Unknown Album (yt)"
+temp_file="temp_audio.mp3"
+final_file="${artist} - ${title}.mp3"
+
+yt-dlp \
+	--extract-audio \
+	--audio-format mp3 \
+	--output "$temp_file" \
+	"$url"
+
+mid3v2 -a "$artist" -t "$title" -A "$album" "$temp_file"
+rsgain custom -s i "$temp_file"
+mv "$temp_file" "/home/ebrahim/media/music/library/$final_file"
