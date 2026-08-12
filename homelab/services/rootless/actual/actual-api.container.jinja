@@ -7,11 +7,10 @@ After=actual.container
 ContainerName=actual-api
 Image=docker.io/jhonderson/actual-http-api
 Pull=newer
-Network=pasta:--map-gw,-T,61251
-PublishPort=127.0.0.1:53217:5007
+PublishPort=5007:5007
 Environment="ACTUAL_SERVER_PASSWORD={{ homelab.priv_actual_server_password }}"
 Environment="API_KEY={{ homelab.priv_actual_api_key }}"
-Environment=ACTUAL_SERVER_URL=http://127.0.0.1:61251/
+Environment=ACTUAL_SERVER_URL=http://host.containers.internal:5006/
 Volume=/home/core/infra-template/homelab/volumes/actual-api-data:/data:Z
 
 [Service]

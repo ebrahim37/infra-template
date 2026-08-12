@@ -26,11 +26,3 @@ queryLog:
   target: /logs
   logRetentionDays: 7
   flushInterval: 30s
-
-hostsFile:
-  sources:
-    - http://host.containers.internal:16932/hosts
-  hostsTTL: 5m
-  loading:
-    strategy: fast
-    refreshPeriod: 1m

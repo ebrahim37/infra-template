@@ -5,9 +5,8 @@ Description=TMDB addon
 ContainerName=tmdb-addon
 Image=docker.io/mrcanelas/tmdb-addon
 Pull=newer
-Network=pasta:--map-gw
 PublishPort=1337:1337/tcp
-Environment=HOST_NAME=http://169.254.1.2:1337
+Environment=HOST_NAME=http://host.containers.internal:1337
 Environment="TMDB_API={{ homelab.priv_tmdb_api_key }}"
 Environment="FANART_API={{ homelab.priv_fanart_api_key }}"
 

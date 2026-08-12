@@ -8,17 +8,16 @@ ContainerName=rybbit-backend
 Image=ghcr.io/rybbit-io/rybbit-backend:v2.7.0
 Pull=newer
 Network=pasta:--map-host-loopback,169.254.1.3
-AddHost=host.containers.internal:169.254.1.3
 PublishPort=127.0.0.1:55401:3001
 Environment=NODE_ENV=production
 EnvironmentFile=./env/clickhouse.env
 EnvironmentFile=./env/postgres.env
 EnvironmentFile=./env/redis.env
 EnvironmentFile=./env/backend.env
-Environment=CLICKHOUSE_HOST=http://host.containers.internal:54679
-Environment=POSTGRES_HOST=host.containers.internal
+Environment=CLICKHOUSE_HOST=http://169.254.1.3:54679
+Environment=POSTGRES_HOST=169.254.1.3
 Environment=POSTGRES_PORT=52721
-Environment=REDIS_HOST=host.containers.internal
+Environment=REDIS_HOST=169.254.1.3
 Environment=REDIS_PORT=56379
 HealthCmd=wget --no-verbose --tries=1 --spider http://127.0.0.1:3001/api/health
 HealthInterval=3s

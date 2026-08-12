@@ -19,7 +19,7 @@ integration:
   docker:
     enabled: true
     container_label: "me.tale.headplane.target=headscale"
-    socket: "tcp://host.containers.internal:58857"
+    socket: "tcp://169.254.1.3:58857"
   kubernetes:
     enabled: false
     pod_name: "headscale"

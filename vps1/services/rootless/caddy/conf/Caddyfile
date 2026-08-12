@@ -4,7 +4,7 @@
 
 (protected) {
 	route {args[0]} {
-		forward_auth host.containers.internal:19491 {
+		forward_auth 169.254.1.3:19491 {
 			uri /api/auth/caddy
 			copy_headers Remote-User Remote-Name Remote-Email Remote-Groups
 		}
@@ -38,24 +38,24 @@ http://headscale.{$BASE_DOMAIN} {
 	reverse_proxy @mba-pub 100.64.0.4:3390
 
 	@tinyauth host tinyauth.{$BASE_DOMAIN}
-	reverse_proxy @tinyauth host.containers.internal:19491
+	reverse_proxy @tinyauth 169.254.1.3:19491
 
 	@pocketid host auth.{$BASE_DOMAIN}
-	reverse_proxy @pocketid host.containers.internal:18467
+	reverse_proxy @pocketid 169.254.1.3:18467
 
 	@widgets host widgets.{$BASE_DOMAIN}
-	reverse_proxy @widgets host.containers.internal:26281
+	reverse_proxy @widgets 169.254.1.3:26281
 
 	@wealthgate host wealthgate-api.{$BASE_DOMAIN}
-	reverse_proxy @wealthgate host.containers.internal:15647
+	reverse_proxy @wealthgate 169.254.1.3:15647
 
 	@orion host orion-api.{$BASE_DOMAIN}
-	reverse_proxy @orion host.containers.internal:9010
+	reverse_proxy @orion 169.254.1.3:9010
 
 	@cf host cf-api.{$BASE_DOMAIN}
-	import protected @cf host.containers.internal:20177
+	import protected @cf 169.254.1.3:20177
 	@cf-front host cf-front.{$BASE_DOMAIN}
-	reverse_proxy @cf-front host.containers.internal:3390
+	reverse_proxy @cf-front 169.254.1.3:3390
 
 	@cash host cash-api.{$BASE_DOMAIN}
 	@cash_book1_bypass {
@@ -65,30 +65,30 @@ http://headscale.{$BASE_DOMAIN} {
 	}
 	route @cash {
 		handle @cash_book1_bypass {
-			reverse_proxy host.containers.internal:20077 {
+			reverse_proxy 169.254.1.3:20077 {
 				header_up -auth
 			}
 		}
 		handle {
-			forward_auth host.containers.internal:19491 {
+			forward_auth 169.254.1.3:19491 {
 				uri /api/auth/caddy
 				copy_headers Remote-User Remote-Name Remote-Email Remote-Groups
 			}
-			reverse_proxy host.containers.internal:20077
+			reverse_proxy 169.254.1.3:20077
 		}
 	}
 	@cash-front host cash-front.{$BASE_DOMAIN}
-	reverse_proxy @cash-front host.containers.internal:3390
+	reverse_proxy @cash-front 169.254.1.3:3390
 
 	@chat host chat.{$BASE_DOMAIN}
-	reverse_proxy @chat host.containers.internal:64565
+	reverse_proxy @chat 169.254.1.3:64565
 	@chat-livekit host chat-livekit.{$BASE_DOMAIN}
 	route @chat-livekit {
 		handle_path /livekit/jwt* {
-			reverse_proxy host.containers.internal:60356
+			reverse_proxy 169.254.1.3:60356
 		}
 		handle_path /livekit/sfu* {
-			reverse_proxy host.containers.internal:64531
+			reverse_proxy 169.254.1.3:64531
 		}
 	}
 
@@ -96,20 +96,20 @@ http://headscale.{$BASE_DOMAIN} {
 		host matrix-sender.{$BASE_DOMAIN}
 		header Auth {env.MATRIX_SENDER_AUTH_TOKEN}
 	}
-	reverse_proxy @matrix-sender host.containers.internal:52498
+	reverse_proxy @matrix-sender 169.254.1.3:52498
 
 	@vaultwarden host vaultwarden.{$BASE_DOMAIN}
-	reverse_proxy @vaultwarden host.containers.internal:62297 {
+	reverse_proxy @vaultwarden 169.254.1.3:62297 {
 		header_up X-Real-IP {remote_host}
 	}
 
 	@glance host glance.{$BASE_DOMAIN}
-	import protected @glance host.containers.internal:50734
+	import protected @glance 169.254.1.3:50734
 
 	@hs host headscale.{$BASE_DOMAIN}
 	route @hs {
 		@headplane path /admin*
-		reverse_proxy @headplane host.containers.internal:56977
+		reverse_proxy @headplane 169.254.1.3:56977
 
 		@api path /api/*
 		handle @api {
@@ -126,11 +126,11 @@ http://headscale.{$BASE_DOMAIN} {
 				Access-Control-Expose-Headers "Content-Length, Content-Type"
 				Vary "Origin, Access-Control-Request-Method, Access-Control-Request-Headers"
 			}
-			reverse_proxy host.containers.internal:54624
+			reverse_proxy 169.254.1.3:54624
 		}
 
 		handle {
-			reverse_proxy host.containers.internal:54624
+			reverse_proxy 169.254.1.3:54624
 		}
 	}
 
@@ -140,12 +140,12 @@ http://headscale.{$BASE_DOMAIN} {
 	@rybbit host heartbeat.{$BASE_DOMAIN}
 	route @rybbit {
 		handle /api/* {
-			reverse_proxy host.containers.internal:55401 {
+			reverse_proxy 169.254.1.3:55401 {
 				header_up X-Real-IP {remote_host}
 			}
 		}
 		handle {
-			reverse_proxy host.containers.internal:52363 {
+			reverse_proxy 169.254.1.3:52363 {
 				header_up X-Real-IP {remote_host}
 			}
 		}

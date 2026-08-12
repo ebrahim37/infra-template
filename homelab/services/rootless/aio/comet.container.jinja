@@ -7,7 +7,6 @@ After=comet-postgres.container
 ContainerName=comet
 Image=docker.io/g0ldyy/comet
 Pull=newer
-Network=pasta:--map-gw
 PublishPort=8000:8000/tcp
 Volume=/home/core/infra-template/homelab/volumes/comet-data:/app/data:Z
 Environment=ADDON_ID=stremio.comet.ebrahim.local
@@ -15,7 +14,7 @@ Environment="ADMIN_DASHBOARD_PASSWORD={{ homelab.priv_comet_admin_dashboard_pass
 Environment="CONFIGURE_PAGE_PASSWORD={{ homelab.priv_comet_configure_page_password }}"
 Environment="PUBLIC_API_TOKEN={{ homelab.priv_comet_public_api_token }}"
 Environment=DATABASE_TYPE=postgresql
-Environment="DATABASE_URL=comet:{{ homelab.priv_comet_postgres_password }}@169.254.1.2:15432/comet"
+Environment="DATABASE_URL=comet:{{ homelab.priv_comet_postgres_password }}@host.containers.internal:15432/comet"
 Environment=SCRAPE_TORBOX=True
 Environment="TORBOX_API_KEY={{ homelab.priv_torbox_api_key }}"
 Environment=SCRAPE_TORRENTIO=live

@@ -8,7 +8,7 @@ ContainerName=remux
 Image=ghcr.io/lostb1t/remux
 Pull=newer
 GroupAdd=keep-groups
-PublishPort=58818:3000
+PublishPort=8097:3000
 AddDevice=/dev/dri
 Volume=/home/core/infra-template/homelab/volumes/remux-data:/data:Z
 
