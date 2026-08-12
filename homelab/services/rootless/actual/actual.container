@@ -1,7 +1,5 @@
 [Unit]
 Description=Actual Budget server
-Requires=network-online.target
-After=network-online.target
 
 [Container]
 ContainerName=actual
