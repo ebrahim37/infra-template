@@ -11,6 +11,12 @@ Host vps1c
 
 Host homelab
 	HostName 100.64.0.2
+	User core
+	ForwardAgent yes
+
+Host homelabc
+	HostName 100.64.0.2
+	Port 222
 	User ebrahim
 	ForwardAgent yes
 
