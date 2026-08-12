@@ -29,8 +29,6 @@ printf '%s\n' "$label" | grep -Eq '^[A-Za-z0-9][A-Za-z0-9 ._-]{0,14}$' || {
 
 run-host sudo wipefs --all --force "$device"
 sudo mkfs.exfat -F -C -P mbr -L "$label" "/host$device"
-sudo partprobe "/host$device"
 
-run-host udevadm settle
 run-host sync
-run-host lsblk -o NAME,PATH,SIZE,MODEL,TRAN,TYPE,FSTYPE,LABEL,MOUNTPOINTS "$device"
+echo "Formatted $device as MBR + exFAT. Unplug and reconnect it before use."
