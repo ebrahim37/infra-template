@@ -1,0 +1,45 @@
+#!/bin/sh
+set -eu
+
+run-host lsblk -o NAME,PATH,SIZE,MODEL,TRAN,TYPE,FSTYPE,LABEL,MOUNTPOINTS
+
+printf '\nUSB device (for example /dev/sdb): ' >/dev/tty
+IFS= read -r device </dev/tty
+
+case $device in
+	/dev/sd[a-z]) ;;
+	*) echo "format-usb: enter a whole /dev/sdX disk" >&2; exit 1 ;;
+esac
+if [ "$(run-host lsblk -dnro TYPE "$device")" != disk ] ||
+	[ "$(run-host lsblk -dnro TRAN "$device")" != usb ]; then
+	echo "format-usb: $device is not a whole USB disk" >&2
+	exit 1
+fi
+if run-host lsblk -nrpo MOUNTPOINTS "$device" | grep -q '[^[:space:]]'; then
+	echo "format-usb: unmount every partition on $device first" >&2
+	exit 1
+fi
+
+printf 'Label (1-15 ASCII letters, digits, spaces, dot, dash, or underscore): ' >/dev/tty
+IFS= read -r label </dev/tty
+printf '%s\n' "$label" | grep -Eq '^[A-Za-z0-9][A-Za-z0-9 ._-]{0,14}$' || {
+	echo "format-usb: invalid label" >&2
+	exit 1
+}
+
+run-host sudo wipefs --all --force "$device"
+printf 'label: dos\n,,7\n' | run-host sudo sfdisk --wipe always "$device"
+
+partition=${device}1
+
+sudo podman run --rm --privileged \
+	-v /host/dev:/host/dev:rslave \
+	docker.io/library/alpine:3.24 sh -eu -c '
+		apk add --no-cache exfatprogs parted >/dev/null
+		partprobe "$1"
+		i=0; while [ ! -b "$3" ]; do i=$((i + 1)); [ "$i" -lt 20 ]; sleep 0.25; done
+		mkfs.exfat -L "$2" "$3"
+	' sh "/host$device" "$label" "/host$partition"
+
+run-host udevadm settle
+run-host lsblk -o NAME,PATH,SIZE,MODEL,TRAN,TYPE,FSTYPE,LABEL,MOUNTPOINTS "$device"
