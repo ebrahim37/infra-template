@@ -32,14 +32,14 @@ printf 'label: dos\n,,7\n' | run-host sudo sfdisk --wipe always "$device"
 
 partition=${device}1
 
-sudo podman run --rm --privileged \
-	-v /host/dev:/host/dev:rslave \
-	docker.io/library/alpine:3.24 sh -eu -c '
-		apk add --no-cache exfatprogs parted >/dev/null
-		partprobe "$1"
-		i=0; while [ ! -b "$3" ]; do i=$((i + 1)); [ "$i" -lt 20 ]; sleep 0.25; done
-		mkfs.exfat -L "$2" "$3"
-	' sh "/host$device" "$label" "/host$partition"
+sudo partprobe "/host$device"
+i=0
+while [ ! -b "/host$partition" ]; do
+	i=$((i + 1))
+	[ "$i" -lt 20 ]
+	sleep 0.25
+done
+sudo mkfs.exfat -L "$label" "/host$partition"
 
 run-host udevadm settle
 run-host lsblk -o NAME,PATH,SIZE,MODEL,TRAN,TYPE,FSTYPE,LABEL,MOUNTPOINTS "$device"
