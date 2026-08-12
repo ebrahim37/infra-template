@@ -4,14 +4,27 @@ version: 1.7.0
 passwd:
   users:
     - name: core
-      groups:
-        - render
-        - video
       ssh_authorized_keys:
         - {{ shared.ssh_authorized_key }}
 
 systemd:
   units:
+    # FCOS stores vendor groups in /usr/lib/group, but usermod only updates groups present in /etc/group
+    # copy the GPU groups before adding core
+    - name: configure-core-gpu-groups.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Add core to the GPU device groups
+        ConditionFirstBoot=true
+        Before=install-host-packages.service clone-containers-repo.service
+
+        [Service]
+        Type=oneshot
+        ExecStart=/bin/sh -eu -c 'grep -q "^render:" /etc/group || grep "^render:" /usr/lib/group >> /etc/group; grep -q "^video:" /etc/group || grep "^video:" /usr/lib/group >> /etc/group; usermod -aG render,video core'
+
+        [Install]
+        WantedBy=multi-user.target
     - name: install-host-packages.service
       enabled: true
       contents: |

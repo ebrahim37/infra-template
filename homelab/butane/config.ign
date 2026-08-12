@@ -5,10 +5,6 @@
   "passwd": {
     "users": [
       {
-        "groups": [
-          "render",
-          "video"
-        ],
         "name": "core",
         "sshAuthorizedKeys": [
           "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICADuTaD1i54A/489uTWBSbh3RIo92DPVh8MZ2cGRGF3"
@@ -119,6 +115,11 @@
   },
   "systemd": {
     "units": [
+      {
+        "contents": "[Unit]\nDescription=Add core to the GPU device groups\nConditionFirstBoot=true\nBefore=install-host-packages.service clone-containers-repo.service\n\n[Service]\nType=oneshot\nExecStart=/bin/sh -eu -c 'grep -q \"^render:\" /etc/group || grep \"^render:\" /usr/lib/group \u003e\u003e /etc/group; grep -q \"^video:\" /etc/group || grep \"^video:\" /usr/lib/group \u003e\u003e /etc/group; usermod -aG render,video core'\n\n[Install]\nWantedBy=multi-user.target\n",
+        "enabled": true,
+        "name": "configure-core-gpu-groups.service"
+      },
       {
         "contents": "[Unit]\nDescription=Layer host packages with rpm-ostree\nWants=network-online.target\nAfter=network-online.target\nBefore=zincati.service\nConditionPathExists=!/var/lib/%N.stamp\n\n[Service]\nType=oneshot\nRemainAfterExit=yes\nExecStart=/usr/bin/rpm-ostree install -y --allow-inactive age git-core\nExecStart=/bin/sh -eu -c 'sops_tmp=$$(mktemp); trap \"rm -f $$sops_tmp\" EXIT; sops_version=$$(curl -fsSIL -o /dev/null -w \"%%{url_effective}\" https://github.com/getsops/sops/releases/latest | sed \"s#.*/##\"); curl -fsSL \"https://github.com/getsops/sops/releases/download/$${sops_version}/sops-$${sops_version}.linux.amd64\" -o \"$$sops_tmp\"; install -D -m 0755 \"$$sops_tmp\" /usr/local/bin/sops'\nExecStart=/bin/touch /var/lib/%N.stamp\nExecStart=/bin/systemctl --no-block reboot\n\n[Install]\nWantedBy=multi-user.target\n",
         "enabled": true,
