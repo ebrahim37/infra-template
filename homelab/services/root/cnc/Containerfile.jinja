@@ -62,7 +62,6 @@ COPY --chown=ebrahim:ebrahim home/ /home/ebrahim/
 RUN printf '%s\n' '{{ shared.ssh_authorized_key }}' > /home/ebrahim/.ssh/authorized_keys \
 	&& chown ebrahim:ebrahim /home/ebrahim/.ssh/authorized_keys \
 	&& install -d -m 0700 -o ebrahim -g ebrahim /home/ebrahim/.config/sops/age \
-	&& install -d -m 0755 -o ebrahim -g ebrahim /home/ebrahim/media/music/library \
 	&& ln -s /host/home/core/infra-template /home/ebrahim/infra-template \
 	&& chmod +x /home/ebrahim/scripts/* \
 	&& rm -f /home/ebrahim/.bash_logout

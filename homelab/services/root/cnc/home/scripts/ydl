@@ -21,4 +21,4 @@ yt-dlp \
 
 mid3v2 -a "$artist" -t "$title" -A "$album" "$temp_file"
 rsgain custom -s i "$temp_file"
-mv "$temp_file" "/home/ebrahim/media/music/library/$final_file"
+mv "$temp_file" "/host/home/core/infra-template/homelab/volumes/navidrome-music/library/$final_file"
