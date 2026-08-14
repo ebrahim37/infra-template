@@ -23,6 +23,8 @@ Environment="TS_EXTRA_ARGS=--login-server=https://headscale.{{ vps1.base_domain 
 [Service]
 TimeoutStartSec=15min
 ExecStartPre=install -d -o core -g core -m 0755 /home/core/infra-template/offsite/volumes/tailscale-client-data
+# optimize UDP forwarding
+ExecStartPre=/bin/sh -eu -c 'netdev=$$(ip -o route get 8.8.8.8 | sed "s/.* dev //; s/ .*//"); test -n "$$netdev"; ethtool -K "$$netdev" rx-udp-gro-forwarding on rx-gro-list off'
 
 [Install]
 WantedBy=multi-user.target
