@@ -28,6 +28,7 @@ RUN apk add --no-cache \
 		sops \
 		sudo \
 		unzip \
+		waypipe \
 		vim
 
 RUN croc_version=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/schollz/croc/releases/latest | sed 's#.*/v##') \
@@ -66,6 +67,8 @@ RUN printf '%s\n' \
 COPY shared/vimrc /etc/vim/vimrc
 COPY --chown=ebrahim:ebrahim shared/ssh_config /home/ebrahim/.ssh/config
 COPY --chown=ebrahim:ebrahim shared/home/ /home/ebrahim/
+COPY --chown=ebrahim:ebrahim shared/scripts/common/ /home/ebrahim/scripts/
+COPY --chown=ebrahim:ebrahim shared/scripts/cnc/ /home/ebrahim/scripts/
 COPY --chown=ebrahim:ebrahim home/ /home/ebrahim/
 RUN printf '%s\n' '{{ shared.ssh_authorized_key }}' > /home/ebrahim/.ssh/authorized_keys \
 	&& chown ebrahim:ebrahim /home/ebrahim/.ssh/authorized_keys \

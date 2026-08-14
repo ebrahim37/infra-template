@@ -21,6 +21,7 @@ RUN pacman -Syu --noconfirm --needed \
 	screen \
 	sops \
 	unzip \
+	waypipe \
 	vim
 
 RUN groupadd -g 1000 ebrahim \
@@ -50,6 +51,8 @@ RUN printf '%s\n' \
 COPY shared/vimrc /etc/vimrc
 COPY --chown=ebrahim:ebrahim shared/ssh_config /home/ebrahim/.ssh/config
 COPY --chown=ebrahim:ebrahim shared/home/ /home/ebrahim/
+COPY --chown=ebrahim:ebrahim shared/scripts/common/ /home/ebrahim/scripts/
+COPY --chown=ebrahim:ebrahim shared/scripts/cnc/ /home/ebrahim/scripts/
 COPY --chown=ebrahim:ebrahim home/ /home/ebrahim/
 RUN printf '%s\n' '{{ shared.ssh_authorized_key }}' > /home/ebrahim/.ssh/authorized_keys \
 	&& chown ebrahim:ebrahim /home/ebrahim/.ssh/authorized_keys \
