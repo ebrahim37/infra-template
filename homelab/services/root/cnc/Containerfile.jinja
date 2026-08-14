@@ -57,6 +57,15 @@ RUN printf '%s\n' \
 	&& install -m 0444 /dev/null /etc/machine-id \
 	&& systemctl enable sshd.service
 
+# avoid StateDirectory quota probing on Podman's XFS-backed overlay
+RUN install -d -m 0755 /var/lib/systemd/linger \
+	&& install -d -m 0755 /etc/systemd/system/systemd-logind.service.d \
+	&& printf '%s\n' \
+		'[Service]' \
+		'StateDirectory=' \
+		'ExecStartPre=/usr/bin/install -d -m 0755 /var/lib/systemd/linger' \
+		> /etc/systemd/system/systemd-logind.service.d/10-overlay-quota-workaround.conf
+
 COPY shared/vimrc /etc/vimrc
 COPY --chown=ebrahim:ebrahim shared/ssh_config /home/ebrahim/.ssh/config
 COPY --chown=ebrahim:ebrahim shared/home/ /home/ebrahim/

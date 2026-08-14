@@ -19,6 +19,8 @@ RUN apk add --no-cache \
 		npm \
 		openrc-init \
 		openssh \
+		openssh-server-pam \
+		pam-rundir \
 		plocate \
 		pnpm \
 		podman \
@@ -55,10 +57,12 @@ RUN printf '%s\n' \
 		'AuthenticationMethods publickey' \
 		'PasswordAuthentication no' \
 		'KbdInteractiveAuthentication no' \
+		'UsePAM yes' \
 		'HostKey /host/etc/ssh/ssh_host_ed25519_key' \
 		'HostKey /host/etc/ssh/ssh_host_ecdsa_key' \
 		'HostKey /host/etc/ssh/ssh_host_rsa_key' \
 		> /etc/ssh/sshd_config.d/10-cnc.conf \
+	&& printf '%s\n' 'SSHD_BINARY=/usr/sbin/sshd.pam' > /etc/conf.d/sshd \
 	&& rc-update add syslog boot \
 	&& rc-update add cgroups \
 	&& rc-update add sshd default \
