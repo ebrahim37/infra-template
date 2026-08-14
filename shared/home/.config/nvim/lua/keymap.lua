@@ -1,27 +1,24 @@
 local map = vim.keymap.set
 
-vim.api.nvim_create_user_command('ToggleAllSide', function()
-	vim.o.relativenumber = not vim.o.relativenumber
-	vim.o.number = not vim.o.number
-	if vim.o.signcolumn == 'yes' then
-		vim.o.signcolumn = 'no'
+local wrapped_line_movement = false
+vim.api.nvim_create_user_command('ToggleWrapMovement', function()
+	wrapped_line_movement = not wrapped_line_movement
+	if wrapped_line_movement then
+		map('n', 'j', 'gj', { silent = true })
+		map('n', 'k', 'gk', { silent = true })
+		map('n', '<Down>', 'gj', { silent = true })
+		map('n', '<Up>', 'gk', { silent = true })
+		map('n', 'gj', 'j', { silent = true })
+		map('n', 'gk', 'k', { silent = true })
 	else
-		vim.o.signcolumn = 'yes'
+		vim.keymap.del('n', 'j')
+		vim.keymap.del('n', 'k')
+		vim.keymap.del('n', '<Down>')
+		vim.keymap.del('n', '<Up>')
+		vim.keymap.del('n', 'gj')
+		vim.keymap.del('n', 'gk')
 	end
-end, { desc = 'toggle relative numbers, numbers, and signcolumn' })
-
-vim.api.nvim_create_user_command('ToggleNumbers', function()
-	vim.o.relativenumber = not vim.o.relativenumber
-	vim.o.number = not vim.o.number
-end, { desc = 'toggle relative numbers, numbers, and signcolumn' })
-
-vim.api.nvim_create_user_command('ToggleSignColumn', function()
-	if vim.o.signcolumn == 'yes' then
-		vim.o.signcolumn = 'no'
-	else
-		vim.o.signcolumn = 'yes'
-	end
-end, { desc = 'toggle relative numbers, numbers, and signcolumn' })
+end, { desc = 'toggle movement by screen lines or file lines' })
 
 map('i', '<C-b>', '<ESC>^i', { desc = 'move beginning of line' })
 map('i', '<C-e>', '<End>', { desc = 'move end of line' })
@@ -65,27 +62,10 @@ for i = 1, 9 do
 end
 vim.keymap.set('n', '<A-0>', function() goto_buffer(10) end, { desc = 'go to buffer 10' })
 
-map('n', '<leader>-', function()
-	vim.o.lines = vim.o.lines
-	vim.o.columns = vim.o.columns
-	vim.defer_fn(function()
-		vim.o.lines = vim.o.lines
-		vim.o.columns = vim.o.columns
-	end, 50)
-end, { desc = 'shrink window padding' })
-map('n', '<leader>=', function()
-	vim.o.lines = 57
-	vim.o.columns = 230
-	vim.defer_fn(function()
-		vim.o.lines = 57
-		vim.o.columns = 230
-	end, 50)
-end, { desc = 'set window size to 230x57 cells' })
-
 map('n', '<leader>?', function() require('which-key').show({ global = false }) end, { desc = 'see the buffer-local keymaps' })
 map('n', '<leader>b', ':enew<CR>', { desc = 'new buffer' })
 map('n', '<leader>e', ':Oil<CR>', { desc = 'open Oil in current window' })
--- map('n', '<leader>w', ':write<CR>', { desc = 'write current buffer' })
+map('n', '<leader>m', '<cmd>ToggleWrapMovement<CR>', { desc = 'toggle wrapped-line movement' })
 map('n', '<leader>w', function()
 	local ok, err = pcall(vim.cmd.write)
 
@@ -115,7 +95,3 @@ map('n', '<leader>ds', vim.diagnostic.setloclist, { desc = 'LSP diagnostic locli
 map('n', '<leader>ff', ':Pick files<CR>', { desc = 'search files in cwd' })
 map('n', '<leader>fg', ':Pick grep_live<CR>', { desc = 'live grep in cwd' })
 map('n', '<leader>fh', ':Pick help<CR>', { desc = 'search help pages' })
-
--- map({ 'n', 'v' }, '<leader>n', ':norm ', { desc = 'run :norm on selection or line' })
--- map({ 'n', 'v' }, '<leader>c', '1z=', { desc = 'correct last spelling error' })
--- map({ 'n', 'v' }, '<leader>o', ':update<CR> :source<CR>', { desc = 'save and source current file' })

@@ -30,7 +30,6 @@ require('mason-tool-installer').setup({
 		{ 'clangd', condition = function() return vim.fn.executable('clangd') == 0 end },
 		'typescript-language-server',
 		'tailwindcss-language-server',
-		'oxlint',
 		'json-lsp',
 	}
 })
@@ -39,7 +38,6 @@ vim.lsp.enable({
 	'clangd',
 	'ts_ls',
 	'tailwindcss',
-	'oxlint',
 	'jsonls',
 })
 
