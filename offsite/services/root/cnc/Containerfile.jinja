@@ -61,6 +61,8 @@ RUN printf '%s\n' \
 		'HostKey /host/etc/ssh/ssh_host_ed25519_key' \
 		'HostKey /host/etc/ssh/ssh_host_ecdsa_key' \
 		'HostKey /host/etc/ssh/ssh_host_rsa_key' \
+		'# needed for waypipe' \
+		'AllowTcpForwarding yes' \
 		> /etc/ssh/sshd_config.d/10-cnc.conf \
 	&& printf '%s\n' 'SSHD_BINARY=/usr/sbin/sshd.pam' > /etc/conf.d/sshd \
 	&& rc-update add syslog boot \
