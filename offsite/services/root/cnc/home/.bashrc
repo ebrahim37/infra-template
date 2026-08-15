@@ -10,6 +10,12 @@ export PATH="$HOME/scripts:$PATH"
 
 export PS1='\[\e[31m\][\[\e[33m\]\u\[\e[32m\]@\[\e[34m\]\h \[\e[35m\]\W\[\e[31m\]]\[\e[m\]\$ '
 
+case ${TERM} in
+	xterm*|rxvt*|Eterm|aterm|kterm|gnome*|foot*)
+		PROMPT_COMMAND=${PROMPT_COMMAND:+$PROMPT_COMMAND; }'printf "\033]0;%s@%s:%s\007" "$USER" "${HOSTNAME%%.*}" "${PWD/#$HOME/\~}"'
+		;;
+esac
+
 alias nvim="nvi"
 
 alias rcs="rc-status"
