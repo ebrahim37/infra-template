@@ -3,12 +3,15 @@ Description=Rybbit ClickHouse
 
 [Container]
 ContainerName=rybbit-clickhouse
-Image=docker.io/clickhouse/clickhouse-server:25.4.2
+Image=docker.io/clickhouse/clickhouse-server:26.3.17.4
 Pull=newer
 PublishPort=127.0.0.1:54679:8123
 EnvironmentFile=./env/clickhouse.env
 Volume=/home/core/infra-template/vps1/volumes/rybbit-clickhouse:/var/lib/clickhouse:Z
-Volume=./clickhouse-config:/etc/clickhouse-server/config.d:ro,Z
+Volume=./clickhouse-config/network.xml:/etc/clickhouse-server/config.d/network.xml:ro,Z
+Volume=./clickhouse-config/logging_rules.xml:/etc/clickhouse-server/config.d/logging_rules.xml:ro,Z
+Volume=./clickhouse-config/resource_limits.xml:/etc/clickhouse-server/config.d/resource_limits.xml:ro,Z
+Volume=./clickhouse-config/user_settings.xml:/etc/clickhouse-server/users.d/user_settings.xml:ro,Z
 HealthCmd=wget --no-verbose --tries=1 --spider http://localhost:8123/ping
 HealthInterval=3s
 HealthTimeout=5s

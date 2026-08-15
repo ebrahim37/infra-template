@@ -3,7 +3,7 @@ Description=Rybbit Redis
 
 [Container]
 ContainerName=rybbit-redis
-Image=docker.io/redis:7-alpine
+Image=docker.io/redis:8.6.4-alpine
 Pull=newer
 PublishPort=127.0.0.1:56379:6379
 EnvironmentFile=./env/redis.env
