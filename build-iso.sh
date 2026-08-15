@@ -29,9 +29,26 @@ if [[ -n ${EDK2_VERSION:-} ]]; then
 	curl -fL "$url" -o "$tmp/edk2.zip"
 	mkdir "$tmp/edk2"
 	unzip -q "$tmp/edk2.zip" -d "$tmp/edk2"
-	cp "$dir/installer/startup.nsh" "$tmp/edk2/startup.nsh"
+	cat > "$tmp/edk2/startup.nsh" <<'EOF'
+FS0:\EFI\BOOT\BOOTAA64.EFI
+FS1:\EFI\BOOT\BOOTAA64.EFI
+FS2:\EFI\BOOT\BOOTAA64.EFI
+EOF
 	tar -C "$tmp/edk2" -czf "$tmp/rpi4-edk2.tar.gz" .
-	sed "s|@DEST_DEVICE@|$DEST_DEVICE|" "$dir/installer/rpi4-edk2-post.sh" > "$tmp/post.sh"
+	sed "s|@DEST_DEVICE@|$DEST_DEVICE|" > "$tmp/post.sh" <<'EOF'
+#!/bin/sh
+set -eu
+
+dest='@DEST_DEVICE@'
+esp=$(lsblk -nrpo PATH,LABEL "$dest" | awk '$2 == "EFI-SYSTEM" { print $1; exit }')
+mnt=/mnt/rpi4-edk2
+mkdir -p "$mnt"
+mount "$esp" "$mnt"
+tar -xzf /run/media/iso/rpi4-edk2.tar.gz -C "$mnt"
+sync
+umount "$mnt"
+systemd-run --unit=installer-poweroff --on-active=30s /usr/bin/systemctl poweroff
+EOF
 	args+=(--post-install /work/post.sh)
 	out=coreos.iso
 fi
