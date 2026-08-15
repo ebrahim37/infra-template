@@ -22,7 +22,8 @@ RUN pacman -Syu --noconfirm --needed \
 	sops \
 	unzip \
 	waypipe \
-	vim
+	vim \
+	xorg-xauth
 
 RUN groupadd -g 1000 ebrahim \
 	&& useradd -m -u 1000 -g 1000 -G wheel -s /bin/bash ebrahim \
@@ -41,6 +42,7 @@ RUN printf '%s\n' \
 		'AuthenticationMethods publickey' \
 		'PasswordAuthentication no' \
 		'KbdInteractiveAuthentication no' \
+		'X11Forwarding yes' \
 		'HostKey /host/etc/ssh/ssh_host_ed25519_key' \
 		'HostKey /host/etc/ssh/ssh_host_ecdsa_key' \
 		'HostKey /host/etc/ssh/ssh_host_rsa_key' \

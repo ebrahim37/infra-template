@@ -31,7 +31,8 @@ RUN apk add --no-cache \
 		sudo \
 		unzip \
 		waypipe \
-		vim
+		vim \
+		xauth
 
 RUN croc_version=$(curl -fsSIL -o /dev/null -w '%{url_effective}' https://github.com/schollz/croc/releases/latest | sed 's#.*/v##') \
 	&& croc_archive="croc_v${croc_version}_Linux-ARM64.tar.gz" \
@@ -58,6 +59,7 @@ RUN printf '%s\n' \
 		'PasswordAuthentication no' \
 		'KbdInteractiveAuthentication no' \
 		'UsePAM yes' \
+		'X11Forwarding yes' \
 		'HostKey /host/etc/ssh/ssh_host_ed25519_key' \
 		'HostKey /host/etc/ssh/ssh_host_ecdsa_key' \
 		'HostKey /host/etc/ssh/ssh_host_rsa_key' \
