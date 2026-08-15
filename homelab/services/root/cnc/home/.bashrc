@@ -1,8 +1,8 @@
 # if not running interactively, don't do anything
 [[ $- != *i* ]] && return
 
-export EDITOR=vi
-export VISUAL=vi
+export EDITOR=nvi
+export VISUAL=nvi
 
 export PNPM_HOME="$HOME/.local/share/pnpm"
 export PATH="$PNPM_HOME/bin:$PATH"
