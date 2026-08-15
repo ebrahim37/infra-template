@@ -1,76 +1,97 @@
 # Fedora CoreOS configs
 
-Butane/Ignition configs and Podman Quadlet services for:
-
-- `vps1`, the public VPS running the main service stack;
-- `offsite`, a Raspberry Pi 4B booting from a USB-SATA SSD; and
-- `homelab`, the x86_64 home media and application server.
-
-This is a personal configuration, not a turnkey deployment.
+Butane/Ignition configs and Podman Quadlet services for my 3 'servers':
+- `vps1`: x86_64 VPS with a public IPv4 and IPv6. Runs VPN (headscale), DNS (blocky), Caddy with Tinyauth and Pocket ID, and more.
+- `homelab`: x86_64 headless PC on my home network. Runs things like media (Jellyfin) and music (Navidrome) servers. Backup target for vps1 and other devices.
+- `offsite`: Raspberry Pi 4B booting from a USB-SATA SSD. Clones the backups from vps1 for redundancy.
 
 ## Build
 
-The scripts use Podman, so Butane, Copier, SOPS, and age do not need to be
-installed on the host.
+The `build-*` scripts use Podman so Butane, Copier etc. don't need to be installed.
 
 ```sh
-./build-butane.sh HOST
-./build-iso.sh HOST
-./build-services.sh HOST
+./build-butane.sh HOST # renders HOST/butane/config.ign
+./build-iso.sh HOST # creates isos/HOST.iso for unattended install to DEST_DEVICE set in HOST/installer.env
+./build-services.sh HOST # renders and deploys the host's quadlet files, updated services must be restarted
 ```
-
-- `build-butane.sh` renders `HOST/butane/config.ign`.
-- `build-iso.sh` creates the unattended `isos/HOST.iso`. It erases the
-  `DEST_DEVICE` configured in `HOST/installer.env` without confirmation.
-- `build-services.sh` renders and deploys the host's Quadlet files. The argument
-  must match `/etc/hostname`.
 
 ## ISO installation
 
-For any of the three hosts, first render its Ignition config and then build its
-unattended installer:
-
+To build the unattended installer (no screen or keyboard needed) for a host, first build the Ignition config, then the ISO.
 ```sh
 ./build-butane.sh HOST
 ./build-iso.sh HOST
 ```
 
-The result is `isos/HOST.iso`. Boot it as physical or virtual installation
-media. For a USB installer, write it in DD/raw mode; on Linux, replace
-`/dev/sdX` with the whole USB device, not a partition:
-
+You can then write the resulting `isos/HOST.iso` to a USB (change /dev/sdX to your USB device):
 ```sh
 sudo dd if=isos/HOST.iso of=/dev/sdX bs=4M status=progress conv=fsync
 ```
+Or you can use something like Rufus but make sure to use DD mode.
 
-Each ISO installs stable Fedora CoreOS with `HOST/butane/config.ign` and erases
-the `DEST_DEVICE` in `HOST/installer.env` without confirmation. `vps1` and
-`homelab` use the standard x86_64 FCOS ISO. Their installers skip the automatic
-reboot, so remove the installation media and reboot once installation has
-finished.
+For x86_64 hosts, the ISO skips the automatic reboot so we don't reboot and install FCOS again.
+Remove the USB before rebooting.
 
 `offsite` is aarch64 and needs extra Raspberry Pi boot support. Its ISO includes
 PFTF EDK2 and the FCOS EFI loader in an appended Pi boot partition, applies the
 configured USB-SATA kernel quirk to both the installer and installed system,
-and copies EDK2 to the SSD's EFI System Partition after installing. Although
-the common installer configuration skips FCOS's automatic reboot, the offsite
-post-install hook powers the Pi off after 30 seconds. Once it powers off, remove
-the installer USB and boot it again with only the target SSD attached. If that
-SSD is already Pi-bootable, wipe its old Pi boot partition first so it cannot
-compete with the installer USB.
+and copies EDK2 to the SSD's EFI System Partition after installing.
+For Raspberry Pis, the ISO shuts down the Pi so we can visually tell the install finished.
 
-## Update the offsite Raspberry Pi 4B EEPROM
+Post-install, get the IP address of the machine (maybe from your router's DHCP page) and run `ssh core@IP`.
+
+## Service deployment
+
+After installing a host, place the SOPS age identity at:
+
+```text
+~/.config/sops/age/keys.txt
+```
+
+Then deploy its services:
+
+```sh
+cd ~/infra-template
+./build-services.sh HOST
+```
+
+## Pinned container images
+
+Some container image versions are intentionally pinned instead of following
+the newest release automatically:
+
+- TinyAuth and Pocket ID provide authentication for Caddy-protected services,
+  so their versions are kept stable to avoid an unplanned authentication
+  breakage.
+- Headscale is pinned because its newest release may be too new for the latest
+  Headplane release.
+- Every Rybbit container is pinned, including its ClickHouse, PostgreSQL, and
+  Redis dependencies. When Rybbit publishes a new release, use the
+  [`update-rybbit` skill](vps1/services/rootless/rybbit/update-rybbit/SKILL.md)
+  to review the upstream changes and update all containers together.
+
+## Layout
+
+- `HOST/butane/`: Butane template and generated Ignition config.
+- `HOST/services/root/`: rootful Quadlets.
+- `HOST/services/rootless/`: rootless Quadlets.
+- `HOST/volumes/`: ignored persistent service data.
+- `cnc-shared/`: files shared by the C&C containers.
+- `secrets.yaml`: SOPS-encrypted service secrets. Keys prefixed with `enc_priv_` are encrypted by SOPS and decrypted by build-services.sh, non-sensitive values are kept plaintext. `build-butane.sh` will error if you use a sensitive value in Butane config as it is meant to be publicly exposed.
+
+Rendered service trees are written to the ignored `HOST/services-dist/` directories,
+and then synced to `/etc/containers/systemd/HOST-root` and `~/.config/containers/systemd/HOST-rootless`.
+
+## Raspberry Pi EEPROM update
 
 The Pi EEPROM must try USB before microSD and enable partition walking so it can
-find EDK2 on the FCOS SSD. From the repository root, the following creates
-`isos/rpi4-eeprom.iso`; the EEPROM configuration is included in the command so
-no separate config file is needed:
+find EDK2 on the FCOS SSD. If this is not already the case, we must flash the EEPROM.
+This script creates `isos/rpi4-eeprom.iso` with the appropriate EEPROM config:
 
 ```bash
 source offsite/installer.env
 
 tmp=$(mktemp -d)
-trap 'rm -rf "$tmp"' EXIT
 
 cat > "$tmp/rpi4-eeprom.conf" <<'EOF'
 [all]
@@ -104,57 +125,15 @@ printf "label: dos\nunit: sectors\n\nstart=2048, type=c, bootable\n" | sfdisk /r
 mformat -F -i /repo/isos/rpi4-eeprom.iso@@1048576 -v RPI-EEPROM ::
 mcopy -s -i /repo/isos/rpi4-eeprom.iso@@1048576 payload/* ::
 '
+
+rm -rf "$tmp"
+unset tmp ARCH DEST_DEVICE LIVE_KARG DEST_KARG EDK2_VERSION
 ```
 
-Write the image with Rufus in DD/raw mode, or on Linux:
-
+Write this image with Rufus in DD/raw mode, or on Linux:
 ```sh
 sudo dd if=isos/rpi4-eeprom.iso of=/dev/sdX bs=4M status=progress conv=fsync
 ```
 
-Power off the Pi, disconnect all other storage, attach only this USB, and power
-on. Wait at least two minutes without interrupting power, then power off and
-remove it. If USB self-update is disabled in the existing EEPROM, use the
-official microSD recovery image instead.
-
-## Service deployment
-
-After installing a host, place the SOPS age identity at:
-
-```text
-~/.config/sops/age/keys.txt
-```
-
-Then deploy its services:
-
-```sh
-cd ~/infra-template
-./build-services.sh HOST
-```
-
-## Pinned container images
-
-Some container image versions are intentionally pinned instead of following
-the newest release automatically:
-
-- TinyAuth and Pocket ID provide authentication for Caddy-protected services,
-  so their versions are kept stable to avoid an unplanned authentication
-  breakage.
-- Headscale is pinned because its newest release may be too new for the latest
-  Headplane release.
-- Every Rybbit container is pinned, including its ClickHouse, PostgreSQL, and
-  Redis dependencies. When Rybbit publishes a new release, use the
-  [`update-rybbit` skill](vps1/services/rootless/rybbit/update-rybbit/SKILL.md)
-  to review the upstream changes and update the complete set of pins together.
-
-## Layout
-
-- `HOST/butane/`: Butane template and generated Ignition config.
-- `HOST/services/root/`: rootful Quadlets.
-- `HOST/services/rootless/`: rootless Quadlets.
-- `HOST/volumes/`: ignored persistent service data.
-- `cnc-shared/`: files shared by the C&C containers.
-- `secrets.yaml`: SOPS-encrypted service secrets.
-
-Rendered service trees are written to the ignored `HOST/services-dist/`
-directories.
+Power off the Pi, attach only this USB, and power on. Wait at least two minutes, then power off and remove it.
+If USB self-update is disabled in the existing EEPROM, you'll have to use an official microSD recovery image instead.
