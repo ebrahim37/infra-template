@@ -72,11 +72,11 @@ RUN printf '%s\n' \
 	&& rc-update add sshd default \
 	&& rm -f /etc/motd
 
-COPY shared/vimrc /etc/vim/vimrc
-COPY --chown=ebrahim:ebrahim shared/ssh_config /home/ebrahim/.ssh/config
-COPY --chown=ebrahim:ebrahim shared/home/ /home/ebrahim/
-COPY --chown=ebrahim:ebrahim shared/scripts/common/ /home/ebrahim/scripts/
-COPY --chown=ebrahim:ebrahim shared/scripts/cnc/ /home/ebrahim/scripts/
+COPY cnc-shared/vimrc /etc/vim/vimrc
+COPY --chown=ebrahim:ebrahim cnc-shared/ssh_config /home/ebrahim/.ssh/config
+COPY --chown=ebrahim:ebrahim cnc-shared/home/ /home/ebrahim/
+COPY --chown=ebrahim:ebrahim cnc-shared/scripts/common/ /home/ebrahim/scripts/
+COPY --chown=ebrahim:ebrahim cnc-shared/scripts/cnc/ /home/ebrahim/scripts/
 COPY --chown=ebrahim:ebrahim home/ /home/ebrahim/
 RUN printf '%s\n' '{{ shared.ssh_authorized_key }}' > /home/ebrahim/.ssh/authorized_keys \
 	&& chown ebrahim:ebrahim /home/ebrahim/.ssh/authorized_keys \

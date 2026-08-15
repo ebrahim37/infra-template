@@ -1,6 +1,6 @@
 #!/bin/sh
 
-scripts_dir=$HOME/infra-template/shared/scripts/cnc
+scripts_dir=$HOME/infra-template/cnc-shared/scripts/cnc
 
 run_host() {
 	sh "$scripts_dir/run-host" "$@"

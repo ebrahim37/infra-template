@@ -108,7 +108,7 @@ relabel_rootless_mounts() {
 }
 
 printf '%s\n' "_envops:" "  undefined: jinja2.StrictUndefined" |
-	tee "$host_dir/services/copier.yml" "$repo_dir/shared/copier.yml" >/dev/null
+	tee "$host_dir/services/copier.yml" "$repo_dir/cnc-shared/copier.yml" >/dev/null
 
 rm -rf "$dest"
 podman run --rm --interactive \
@@ -133,9 +133,9 @@ podman run --rm --interactive \
 			.venv/bin/python -m pip install copier
 		fi
 		.venv/bin/copier copy --quiet --data-file /tmp/secrets.yaml "$1/services" "$1/services-dist"
-		.venv/bin/copier copy --quiet --data-file /tmp/secrets.yaml shared "$1/services-dist/root/cnc/shared"
+		.venv/bin/copier copy --quiet --data-file /tmp/secrets.yaml cnc-shared "$1/services-dist/root/cnc/cnc-shared"
 	' sh "$host_name"
-rm -f "$host_dir/services/copier.yml" "$repo_dir/shared/copier.yml"
+rm -f "$host_dir/services/copier.yml" "$repo_dir/cnc-shared/copier.yml"
 
 root_quadlet_dir="/etc/containers/systemd/${host_name}-root"
 sudo_sync_tree "$dest/root" "$root_quadlet_dir"

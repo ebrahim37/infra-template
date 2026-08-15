@@ -59,11 +59,11 @@ RUN install -d -m 0755 /var/lib/systemd/linger \
 		'ExecStartPre=/usr/bin/install -d -m 0755 /var/lib/systemd/linger' \
 		> /etc/systemd/system/systemd-logind.service.d/10-overlay-quota-workaround.conf
 
-COPY shared/vimrc /etc/vimrc
-COPY --chown=ebrahim:ebrahim shared/ssh_config /home/ebrahim/.ssh/config
-COPY --chown=ebrahim:ebrahim shared/home/ /home/ebrahim/
-COPY --chown=ebrahim:ebrahim shared/scripts/common/ /home/ebrahim/scripts/
-COPY --chown=ebrahim:ebrahim shared/scripts/cnc/ /home/ebrahim/scripts/
+COPY cnc-shared/vimrc /etc/vimrc
+COPY --chown=ebrahim:ebrahim cnc-shared/ssh_config /home/ebrahim/.ssh/config
+COPY --chown=ebrahim:ebrahim cnc-shared/home/ /home/ebrahim/
+COPY --chown=ebrahim:ebrahim cnc-shared/scripts/common/ /home/ebrahim/scripts/
+COPY --chown=ebrahim:ebrahim cnc-shared/scripts/cnc/ /home/ebrahim/scripts/
 COPY --chown=ebrahim:ebrahim home/ /home/ebrahim/
 RUN printf '%s\n' '{{ shared.ssh_authorized_key }}' > /home/ebrahim/.ssh/authorized_keys \
 	&& chown ebrahim:ebrahim /home/ebrahim/.ssh/authorized_keys \

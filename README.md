@@ -153,7 +153,7 @@ the newest release automatically:
 - `HOST/services/root/`: rootful Quadlets.
 - `HOST/services/rootless/`: rootless Quadlets.
 - `HOST/volumes/`: ignored persistent service data.
-- `shared/`: files shared by the C&C containers.
+- `cnc-shared/`: files shared by the C&C containers.
 - `secrets.yaml`: SOPS-encrypted service secrets.
 
 Rendered service trees are written to the ignored `HOST/services-dist/`

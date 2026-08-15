@@ -2,7 +2,7 @@
 set -eu
 
 repo_dir=$HOME/infra-template
-run_host=$repo_dir/shared/scripts/cnc/run-host
+run_host=$repo_dir/cnc-shared/scripts/cnc/run-host
 
 git -C "$repo_dir" pull --ff-only
 sh "$run_host" systemctl --user start podman.socket
