@@ -1,7 +1,7 @@
 [Unit]
 Description=Alpine C&C container
-Requires=network-online.target
-After=network-online.target
+Requires=network-online.target podman.socket
+After=network-online.target podman.socket
 
 [Container]
 ContainerName=cnc

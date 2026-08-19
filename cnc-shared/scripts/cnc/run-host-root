@@ -22,4 +22,5 @@ exec sudo nsenter \
 		LOGNAME=root \
 		SHELL=/bin/bash \
 		PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/var/lib/snapd/snap/bin \
+		CONTAINER_HOST=unix:///run/podman/podman.sock \
 		"$@"
