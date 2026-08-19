@@ -1,0 +1,7 @@
+#!/bin/sh
+set -eu
+
+run-host-root podman exec tailscale-client mkdir -p /var/lib/tailscale/received
+run-host-root podman exec tailscale-client tailscale file get --wait=false /var/lib/tailscale/received
+
+cp -R "$HOME/infra-template/$HOSTNAME/volumes/tailscale-client-data/received"/. .
