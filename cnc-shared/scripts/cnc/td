@@ -1,7 +1,13 @@
 #!/bin/sh
 set -eu
 
-run-host-root podman exec tailscale-client mkdir -p /var/lib/tailscale/received
-run-host-root podman exec tailscale-client tailscale file get --wait=false /var/lib/tailscale/received
+received_dir=$HOME/infra-template/$HOSTNAME/volumes/tailscale-client-data/received
 
-cp -R "$HOME/infra-template/$HOSTNAME/volumes/tailscale-client-data/received"/. .
+mkdir -p "$received_dir"
+run-host-root podman exec tailscale-client tailscale file get --wait=false /var/lib/tailscale/received
+sudo chown -R ebrahim:ebrahim "/host/home/core/infra-template/$HOSTNAME/volumes/tailscale-client-data/received"
+
+for path in "$received_dir"/* "$received_dir"/.[!.]* "$received_dir"/..?*; do
+	[ -e "$path" ] || [ -L "$path" ] || continue
+	mv "$path" .
+done
