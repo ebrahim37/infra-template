@@ -7,6 +7,10 @@ upstreams:
       - https://cloudflare-dns.com/dns-query
       - https://dns.google/dns-query
 
+customDNS:
+  mapping:
+    local.strem.io: 100.64.0.2
+
 blocking:
   denylists:
     ads:

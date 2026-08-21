@@ -5,7 +5,8 @@ Description=Stremio streaming server
 ContainerName=stremio-server
 Image=docker.io/stremio/server
 Pull=newer
-PublishPort=11470:11470/tcp
+PublishPort=12470:12470/tcp
+Environment=NO_CORS=1
 Volume=/home/core/infra-template/homelab/volumes/stremio-server-data:/root/.stremio-server:Z
 
 [Service]
