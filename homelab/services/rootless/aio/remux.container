@@ -8,7 +8,7 @@ ContainerName=remux
 Image=ghcr.io/lostb1t/remux
 Pull=newer
 GroupAdd=keep-groups
-PublishPort=18098:3000/tcp
+PublishPort=8097:3000/tcp
 Environment=RUST_LOG=remux=debug
 AddDevice=/dev/dri
 Volume=/home/core/infra-template/homelab/volumes/remux-data:/data:Z
