@@ -1,13 +1,13 @@
 [Unit]
-Description=Stremio HTTPS reverse proxy
-Requires=stremio-server.container
-After=stremio-server.container
+Description=Stremio and AIOStreams HTTPS reverse proxy
+Requires=stremio-server.container aiostreams.container
+After=stremio-server.container aiostreams.container
 
 [Container]
 ContainerName=stremio-proxy
 Image=ghcr.io/caddy-dns/cloudflare
 Pull=newer
-PublishPort=100.64.0.2:12470:443/tcp
+PublishPort=100.64.0.2:443:443/tcp
 Environment="BASE_DOMAIN={{ vps1.base_domain }}"
 Environment="CF_API_TOKEN={{ vps1.priv_cloudflare_api_token }}"
 Volume=./stremio.Caddyfile:/etc/caddy/Caddyfile:ro,Z

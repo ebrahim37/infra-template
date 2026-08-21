@@ -1,6 +1,19 @@
-stremio.{$BASE_DOMAIN} {
+*.aio.{$BASE_DOMAIN} {
 	tls {
 		dns cloudflare {env.CF_API_TOKEN}
 	}
-	reverse_proxy 100.64.0.2:11470
+
+	@stremio host stremio.aio.{$BASE_DOMAIN}
+	handle @stremio {
+		reverse_proxy 100.64.0.2:11470
+	}
+
+	@aiostreams host aiostreams.aio.{$BASE_DOMAIN}
+	handle @aiostreams {
+		reverse_proxy 100.64.0.2:3000
+	}
+
+	handle {
+		respond 404
+	}
 }

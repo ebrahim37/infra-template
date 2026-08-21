@@ -9,7 +9,7 @@ upstreams:
 
 customDNS:
   mapping:
-    stremio.ebra.dev: 100.64.0.2
+    aio.ebra.dev: 100.64.0.2
 
 blocking:
   denylists:
