@@ -59,7 +59,7 @@
         "path": "/etc/sysctl.d/90-containers.conf",
         "contents": {
           "compression": "gzip",
-          "source": "data:;base64,H4sIAAAAAAAC/3TMwQnDMAyF4Xum8ASCUtNbZhEitoOoKgtFcdfvxVAKzfW9j19rANvIwIat+5u8pDXdlrk/YOvagERgvqz7H1Bqo1PiAuVv5fANBwkXfJE/fxEbnmrOg6XutaB1DzyCPNKacr4vnwAAAP//ldMypq0AAAA="
+          "source": "data:;base64,H4sIAAAAAAAC/8pLLdHLLCgz0cssiE/LLypPLEpRsFUw5IKKm+kl5+el6SXm5OhBZTPz0rEoSElNSyzNKcGhCGx6aV5BUWZZZk5qempKfEF+UUl8cUliUYmCrYKJiTEXIAAA//9IaeheiAAAAA=="
         },
         "mode": 420
       },
