@@ -1,0 +1,29 @@
+[Unit]
+Description=Roundcube webmail
+
+[Container]
+ContainerName=roundcube
+Image=docker.io/roundcube/roundcubemail:1.7.3-apache-nonroot
+Pull=newer
+PublishPort={{ vps1.tailnet_ipv4 }}:63146:8000
+Environment=TZ=America/Toronto
+Environment=ROUNDCUBEMAIL_DB_TYPE=sqlite
+Environment=ROUNDCUBEMAIL_DEFAULT_HOST=ssl://imap.gmail.com
+Environment=ROUNDCUBEMAIL_DEFAULT_PORT=993
+Environment=ROUNDCUBEMAIL_SMTP_SERVER=ssl://smtp.gmail.com
+Environment=ROUNDCUBEMAIL_SMTP_PORT=465
+Environment=ROUNDCUBEMAIL_PLUGINS=archive,zipdownload
+Volume=./provider-config.inc.php:/var/roundcube/config/provider-config.inc.php:ro,Z
+Volume=/home/core/infra-template/vps1/volumes/roundcube-db:/var/roundcube/db:U,Z
+Volume=/home/core/infra-template/vps1/volumes/roundcube-secrets/des-key:/run/secrets/roundcube_des_key:ro,Z
+
+[Service]
+TimeoutStartSec=15min
+ExecStartPre=/usr/bin/mkdir -p /home/core/infra-template/vps1/volumes/roundcube-db
+ExecStartPre=/usr/bin/mkdir -p /home/core/infra-template/vps1/volumes/roundcube-secrets
+ExecStartPre=/usr/bin/bash -c "if [ ! -s /home/core/infra-template/vps1/volumes/roundcube-secrets/des-key ]; then umask 077; /usr/bin/openssl rand -base64 32 > /home/core/infra-template/vps1/volumes/roundcube-secrets/des-key; /usr/bin/podman unshare chown 33:33 /home/core/infra-template/vps1/volumes/roundcube-secrets/des-key; fi"
+# tailscale-client is a rootful system unit, wait for its interface instead
+ExecStartPre=/bin/sh -c "until /usr/sbin/ip -4 addr show dev tailscale0 2>/dev/null | /usr/bin/grep -Fq '{{ vps1.tailnet_ipv4 }}/'; do /usr/bin/sleep 1; done"
+
+[Install]
+WantedBy=default.target
