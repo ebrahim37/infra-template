@@ -5,6 +5,7 @@ Description=SnappyMail webmail
 ContainerName=snappymail
 Image=docker.io/djmaze/snappymail
 Pull=newer
+Network=pasta:--ipv4-only
 PublishPort={{ vps1.tailnet_ipv4 }}:63146:8888
 Environment=TZ=America/Toronto
 Environment=SECURE_COOKIES=false
