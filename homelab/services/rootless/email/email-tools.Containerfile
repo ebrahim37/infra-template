@@ -6,4 +6,5 @@ RUN apk add --no-cache ca-certificates cyrus-sasl-login isync postfix \
 	&& cp -a /var/spool/postfix /var/spool/postfix.default
 
 COPY postfix-entrypoint.sh /usr/local/bin/postfix-entrypoint
-RUN chmod 0755 /usr/local/bin/postfix-entrypoint
+COPY mbsync-entrypoint.sh /usr/local/bin/mbsync-entrypoint
+RUN chmod 0755 /usr/local/bin/postfix-entrypoint /usr/local/bin/mbsync-entrypoint
