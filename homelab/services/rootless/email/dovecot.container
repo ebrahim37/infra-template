@@ -9,7 +9,7 @@ UserNS=keep-id
 Environment=USER_PASSWORD=1234
 PublishPort=31143:31143
 Volume=./dovecot.conf:/etc/dovecot/conf.d/99-email.conf:ro,Z
-Volume=/home/core/infra-template/homelab/volumes/email-maildir:/srv/vmail:U,Z
+Volume=/home/core/infra-template/homelab/volumes/email-maildir:/srv/vmail:U,z
 
 [Service]
 TimeoutStartSec=15min
