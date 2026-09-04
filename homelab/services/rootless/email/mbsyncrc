@@ -10,14 +10,15 @@ IMAPStore gmail-main-remote
 Account gmail-main
 
 MaildirStore gmail-main-local
-Path /mail/
+Path "/mail/gmail main/"
 Inbox "/mail/gmail main"
 SubFolders Verbatim
 MaxSize 0
 
-Channel gmail-main-inbox
-Far :gmail-main-remote:INBOX
+Channel gmail-main
+Far :gmail-main-remote:
 Near :gmail-main-local:
+Patterns INBOX *
 Sync Full
 Create Both
 Expunge Both
@@ -36,14 +37,15 @@ IMAPStore gmail-qa-remote
 Account gmail-qa
 
 MaildirStore gmail-qa-local
-Path /mail/
+Path "/mail/gmail qa/"
 Inbox "/mail/gmail qa"
 SubFolders Verbatim
 MaxSize 0
 
-Channel gmail-qa-inbox
-Far :gmail-qa-remote:INBOX
+Channel gmail-qa
+Far :gmail-qa-remote:
 Near :gmail-qa-local:
+Patterns INBOX *
 Sync Full
 Create Both
 Expunge Both
@@ -62,14 +64,15 @@ IMAPStore icloud-remote
 Account icloud
 
 MaildirStore icloud-local
-Path /mail/
+Path /mail/icloud/
 Inbox /mail/icloud
 SubFolders Verbatim
 MaxSize 0
 
-Channel icloud-inbox
-Far :icloud-remote:INBOX
+Channel icloud
+Far :icloud-remote:
 Near :icloud-local:
+Patterns INBOX *
 Sync Full
 Create Both
 Expunge Both
