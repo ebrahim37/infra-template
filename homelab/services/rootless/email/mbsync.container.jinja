@@ -14,7 +14,7 @@ Environment="GMAIL_MAIN_APP_PASSWORD={{ homelab.priv_email_gmail_main_password }
 Environment="GMAIL_QA_APP_PASSWORD={{ homelab.priv_email_gmail_qa_password }}"
 Environment="ICLOUD_APP_PASSWORD={{ homelab.priv_email_icloud_password }}"
 Volume=./mbsyncrc:/etc/mbsyncrc:ro,Z
-Volume=/home/core/infra-template/homelab/volumes/email-maildir:/mail:U,Z
+Volume=/home/core/infra-template/homelab/volumes/email-maildir:/mail:U,z
 
 [Service]
 TimeoutStartSec=30min
