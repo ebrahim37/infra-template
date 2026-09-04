@@ -5,6 +5,7 @@ Description=Local IMAP server for synchronized email
 ContainerName=dovecot
 Image=docker.io/dovecot/dovecot
 Pull=newer
+UserNS=keep-id
 Environment=USER_PASSWORD=1234
 PublishPort=31143:31143
 Volume=./dovecot.conf:/etc/dovecot/conf.d/99-email.conf:ro,Z
