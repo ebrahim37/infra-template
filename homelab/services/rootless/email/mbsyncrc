@@ -11,7 +11,7 @@ Account gmail-main
 
 MaildirStore gmail-main-local
 Path "/mail/gmail main/"
-Inbox "/mail/gmail main"
+Inbox "/mail/gmail main/INBOX"
 SubFolders Verbatim
 MaxSize 0
 
@@ -38,7 +38,7 @@ Account gmail-qa
 
 MaildirStore gmail-qa-local
 Path "/mail/gmail qa/"
-Inbox "/mail/gmail qa"
+Inbox "/mail/gmail qa/INBOX"
 SubFolders Verbatim
 MaxSize 0
 
@@ -65,7 +65,7 @@ Account icloud
 
 MaildirStore icloud-local
 Path /mail/icloud/
-Inbox /mail/icloud
+Inbox /mail/icloud/INBOX
 SubFolders Verbatim
 MaxSize 0
 

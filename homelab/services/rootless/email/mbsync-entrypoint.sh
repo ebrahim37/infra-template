@@ -4,7 +4,7 @@ set -u
 trap 'exit 0' INT TERM
 
 for mailbox in "gmail main" "gmail qa" icloud; do
-	/bin/mkdir -p "/mail/$mailbox/cur" "/mail/$mailbox/new" "/mail/$mailbox/tmp"
+	/bin/mkdir -p "/mail/$mailbox/INBOX/cur" "/mail/$mailbox/INBOX/new" "/mail/$mailbox/INBOX/tmp"
 done
 
 while :; do
