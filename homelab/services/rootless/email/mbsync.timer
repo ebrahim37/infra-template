@@ -1,0 +1,12 @@
+[Unit]
+Description=Sync Gmail and iCloud inboxes every three minutes
+
+[Timer]
+OnBootSec=30s
+OnUnitInactiveSec=3min
+AccuracySec=15s
+Persistent=true
+Unit=mbsync.service
+
+[Install]
+WantedBy=timers.target

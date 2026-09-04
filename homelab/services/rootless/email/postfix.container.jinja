@@ -1,0 +1,22 @@
+[Unit]
+Description=Sender-dependent Gmail and iCloud SMTP relay
+Wants=network-online.target
+After=network-online.target
+
+[Container]
+ContainerName=postfix
+Image=email-tools.build
+Pull=never
+Exec=/usr/local/bin/postfix-entrypoint
+PublishPort=10025:25
+Environment="GMAIL_MAIN_APP_PASSWORD={{ homelab.priv_email_gmail_main_password }}"
+Environment="GMAIL_QA_APP_PASSWORD={{ homelab.priv_email_gmail_qa_password }}"
+Environment="ICLOUD_APP_PASSWORD={{ homelab.priv_email_icloud_password }}"
+Volume=/home/core/infra-template/homelab/volumes/postfix-spool:/var/spool/postfix:Z
+
+[Service]
+TimeoutStartSec=15min
+ExecStartPre=/usr/bin/mkdir -p /home/core/infra-template/homelab/volumes/postfix-spool
+
+[Install]
+WantedBy=default.target
