@@ -7,7 +7,7 @@ After=stremio-server.container aiostreams.container
 ContainerName=stremio-proxy
 Image=ghcr.io/caddy-dns/cloudflare
 Pull=newer
-PublishPort=100.64.0.2:443:443/tcp
+PublishPort=443:443/tcp
 Environment="BASE_DOMAIN={{ vps1.base_domain }}"
 Environment="CF_API_TOKEN={{ vps1.priv_cloudflare_api_token }}"
 Volume=./stremio.Caddyfile:/etc/caddy/Caddyfile:ro,Z
@@ -15,7 +15,6 @@ Volume=/home/core/infra-template/homelab/volumes/stremio-proxy-data:/data:Z
 
 [Service]
 TimeoutStartSec=15min
-ExecStartPre=/bin/sh -c "until /usr/sbin/ip -4 addr show dev tailscale0 2>/dev/null | /usr/bin/grep -Fq '100.64.0.2/'; do /usr/bin/sleep 1; done"
 ExecStartPre=/usr/bin/mkdir -p /home/core/infra-template/homelab/volumes/stremio-proxy-data
 
 [Install]

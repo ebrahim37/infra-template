@@ -5,12 +5,12 @@
 
 	@stremio host stremio.aio.{$BASE_DOMAIN}
 	handle @stremio {
-		reverse_proxy 100.64.0.2:11470
+		reverse_proxy host.containers.internal:11470
 	}
 
 	@aiostreams host aiostreams.aio.{$BASE_DOMAIN}
 	handle @aiostreams {
-		reverse_proxy 100.64.0.2:3000
+		reverse_proxy host.containers.internal:3000
 	}
 
 	handle {

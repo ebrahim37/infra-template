@@ -1,0 +1,77 @@
+IMAPAccount gmail-main
+Host imap.gmail.com
+Port 993
+User ebrahimhagh2004@gmail.com
+PassCmd "printenv GMAIL_MAIN_APP_PASSWORD"
+TLSType IMAPS
+CertificateFile /etc/ssl/certs/ca-certificates.crt
+
+IMAPStore gmail-main-remote
+Account gmail-main
+
+MaildirStore gmail-main-local
+Path /mail/
+Inbox "/mail/gmail main"
+SubFolders Verbatim
+MaxSize 0
+
+Channel gmail-main-inbox
+Far :gmail-main-remote:INBOX
+Near :gmail-main-local:
+Sync Full
+Create Both
+Expunge Both
+CopyArrivalDate yes
+SyncState *
+
+IMAPAccount gmail-qa
+Host imap.gmail.com
+Port 993
+User qa7355608@gmail.com
+PassCmd "printenv GMAIL_QA_APP_PASSWORD"
+TLSType IMAPS
+CertificateFile /etc/ssl/certs/ca-certificates.crt
+
+IMAPStore gmail-qa-remote
+Account gmail-qa
+
+MaildirStore gmail-qa-local
+Path /mail/
+Inbox "/mail/gmail qa"
+SubFolders Verbatim
+MaxSize 0
+
+Channel gmail-qa-inbox
+Far :gmail-qa-remote:INBOX
+Near :gmail-qa-local:
+Sync Full
+Create Both
+Expunge Both
+CopyArrivalDate yes
+SyncState *
+
+IMAPAccount icloud
+Host imap.mail.me.com
+Port 993
+User ebrahimhagh2004@icloud.com
+PassCmd "printenv ICLOUD_APP_PASSWORD"
+TLSType IMAPS
+CertificateFile /etc/ssl/certs/ca-certificates.crt
+
+IMAPStore icloud-remote
+Account icloud
+
+MaildirStore icloud-local
+Path /mail/
+Inbox /mail/icloud
+SubFolders Verbatim
+MaxSize 0
+
+Channel icloud-inbox
+Far :icloud-remote:INBOX
+Near :icloud-local:
+Sync Full
+Create Both
+Expunge Both
+CopyArrivalDate yes
+SyncState *

@@ -7,7 +7,7 @@ After=comet.container tmdb-addon.container
 ContainerName=aiostreams
 Image=docker.io/viren070/aiostreams
 Pull=newer
-PublishPort=100.64.0.2:3000:3000/tcp
+PublishPort=3000:3000/tcp
 Volume=/home/core/infra-template/homelab/volumes/aiostreams-data:/app/data:Z
 Environment=ADDON_ID=aiostreams.ebrahim.local
 Environment=BASE_URL=https://aiostreams.aio.{{ vps1.base_domain }}
@@ -23,7 +23,6 @@ Environment=LOG_TIMEZONE=America/Toronto
 
 [Service]
 TimeoutStartSec=15min
-ExecStartPre=/bin/sh -c "until /usr/sbin/ip -4 addr show dev tailscale0 2>/dev/null | /usr/bin/grep -Fq '100.64.0.2/'; do /usr/bin/sleep 1; done"
 ExecStartPre=/usr/bin/mkdir -p /home/core/infra-template/homelab/volumes/aiostreams-data
 
 [Install]

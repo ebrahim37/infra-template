@@ -1,0 +1,14 @@
+[Unit]
+Description=Build shared email tools image
+
+[Build]
+ImageTag=localhost/email-tools:latest
+File=./email-tools.Containerfile
+SetWorkingDirectory=unit
+Pull=newer
+
+[Service]
+TimeoutStartSec=15min
+
+[Install]
+WantedBy=default.target
