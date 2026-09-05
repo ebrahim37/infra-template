@@ -11,12 +11,12 @@ postconf -e 'inet_interfaces = all'
 postconf -e 'inet_protocols = ipv4'
 postconf -e 'mynetworks = 127.0.0.0/8, 10.0.2.0/24, 169.254.0.0/16'
 postconf -e 'smtpd_relay_restrictions = permit_mynetworks, reject'
-postconf -e 'smtpd_sender_restrictions = check_sender_access hash:/etc/postfix/allowed_senders, reject'
+postconf -e 'smtpd_sender_restrictions = check_sender_access lmdb:/etc/postfix/allowed_senders, reject'
 postconf -e 'relayhost = [smtp.gmail.com]:587'
-postconf -e 'sender_dependent_relayhost_maps = hash:/etc/postfix/sender_relay'
+postconf -e 'sender_dependent_relayhost_maps = lmdb:/etc/postfix/sender_relay'
 postconf -e 'smtp_sender_dependent_authentication = yes'
 postconf -e 'smtp_sasl_auth_enable = yes'
-postconf -e 'smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd'
+postconf -e 'smtp_sasl_password_maps = lmdb:/etc/postfix/sasl_passwd'
 postconf -e 'smtp_sasl_security_options = noanonymous'
 postconf -e 'smtp_sasl_tls_security_options = noanonymous'
 postconf -e 'smtp_sasl_mechanism_filter = plain, login'
@@ -60,9 +60,9 @@ umask 077
 	printf '%s %s:%s\n' '[smtp.mail.me.com]:587' 'ebrahimhagh2004@icloud.com' "$ICLOUD_APP_PASSWORD"
 } > /etc/postfix/sasl_passwd
 
-postmap hash:/etc/postfix/sender_relay
-postmap hash:/etc/postfix/allowed_senders
-postmap hash:/etc/postfix/sasl_passwd
+postmap lmdb:/etc/postfix/sender_relay
+postmap lmdb:/etc/postfix/allowed_senders
+postmap lmdb:/etc/postfix/sasl_passwd
 postfix set-permissions
 postfix check
 
