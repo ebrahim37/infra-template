@@ -63,7 +63,6 @@ umask 077
 postmap lmdb:/etc/postfix/sender_relay
 postmap lmdb:/etc/postfix/allowed_senders
 postmap lmdb:/etc/postfix/sasl_passwd
-postfix set-permissions
 postfix check
 
 exec postfix start-fg
