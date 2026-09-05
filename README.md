@@ -3,7 +3,7 @@
 Butane/Ignition configs and Podman Quadlet services for my 3 'servers':
 - `vps1`: x86_64 VPS with a public IPv4 and IPv6. Runs VPN (headscale), DNS (blocky), Caddy with Tinyauth and Pocket ID, and more.
 - `homelab`: x86_64 headless PC on my home network. Runs things like media (Jellyfin) and music (Navidrome) servers. Backup target for vps1 and other devices.
-- `offsite`: Raspberry Pi 4B booting from a USB-SATA SSD. Clones the backups from vps1 for redundancy.
+- `offsite`: Raspberry Pi 4B booting from a USB-SATA SSD. Clones the backups from homelab for redundancy.
 
 ## Build
 
