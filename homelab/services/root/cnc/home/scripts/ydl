@@ -12,6 +12,8 @@ title=$3
 album="Unknown Album (yt)"
 temp_file="temp_audio.mp3"
 final_file="${artist} - ${title}.mp3"
+music_dir="/host/home/core/infra-template/homelab/volumes/navidrome-music/library"
+destination="$music_dir/$final_file"
 
 yt-dlp \
 	--extract-audio \
@@ -21,4 +23,7 @@ yt-dlp \
 
 mid3v2 -a "$artist" -t "$title" -A "$album" "$temp_file"
 rsgain custom -s i "$temp_file"
-mv "$temp_file" "/host/home/core/infra-template/homelab/volumes/navidrome-music/library/$final_file"
+mv "$temp_file" "$destination"
+
+# fix selinux label
+chcon --reference="$music_dir" "$destination"
