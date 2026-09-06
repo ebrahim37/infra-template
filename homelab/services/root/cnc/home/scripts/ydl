@@ -12,7 +12,8 @@ title=$3
 album="Unknown Album (yt)"
 temp_file="temp_audio.mp3"
 final_file="${artist} - ${title}.mp3"
-music_dir="/host/home/core/infra-template/homelab/volumes/navidrome-music/library"
+host_music_dir="/home/core/infra-template/homelab/volumes/navidrome-music/library"
+music_dir="/host$host_music_dir"
 destination="$music_dir/$final_file"
 
 yt-dlp \
@@ -26,4 +27,4 @@ rsgain custom -s i "$temp_file"
 mv "$temp_file" "$destination"
 
 # fix selinux label
-chcon --reference="$music_dir" "$destination"
+run-host chcon --reference="$host_music_dir" "$host_music_dir/$final_file"
