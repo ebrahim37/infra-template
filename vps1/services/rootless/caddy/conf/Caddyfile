@@ -134,9 +134,6 @@ http://headscale.{$BASE_DOMAIN} {
 		}
 	}
 
-	@jellyfin host jellyfin.{$BASE_DOMAIN}
-	import protected @jellyfin 100.64.0.2:8096
-
 	@rybbit host heartbeat.{$BASE_DOMAIN}
 	route @rybbit {
 		handle /api/* {

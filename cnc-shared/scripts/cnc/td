@@ -1,13 +1,72 @@
 #!/bin/sh
 set -eu
 
-received_dir=$HOME/infra-template/$HOSTNAME/volumes/tailscale-client-data/received
+state_dir=$HOME/infra-template/$HOSTNAME/volumes/tailscale-client-data
 
-mkdir -p "$received_dir"
-run-host-root podman exec tailscale-client tailscale file get --wait=false /var/lib/tailscale/received
-sudo chown -R ebrahim:ebrahim "/host/home/core/infra-template/$HOSTNAME/volumes/tailscale-client-data/received"
+receive_files() {
+	destination=${1:-.}
+	received_dir=$state_dir/received
 
-for path in "$received_dir"/* "$received_dir"/.[!.]* "$received_dir"/..?*; do
-	[ -e "$path" ] || [ -L "$path" ] || continue
-	mv "$path" .
-done
+	mkdir -p "$destination" "$received_dir"
+	run-host-root podman exec tailscale-client tailscale file get --wait=false /var/lib/tailscale/received
+	sudo chown -R ebrahim:ebrahim "/host/home/core/infra-template/$HOSTNAME/volumes/tailscale-client-data/received"
+
+	for path in "$received_dir"/* "$received_dir"/.[!.]* "$received_dir"/..?*; do
+		[ -e "$path" ] || [ -L "$path" ] || continue
+		mv "$path" "$destination"/
+	done
+}
+
+validate_files() {
+	while [ "$#" -gt 1 ]; do
+		[ -f "$1" ] || {
+			echo "td: not a file: $1" >&2
+			exit 1
+		}
+		shift
+	done
+}
+
+send_files() {
+	tailnet_name=
+	for arg do
+		tailnet_name=$arg
+	done
+	[ -n "$tailnet_name" ] || {
+		echo "td: tailnet name cannot be empty" >&2
+		exit 2
+	}
+
+	mkdir -p "$state_dir"
+	send_dir=$(mktemp -d "$state_dir/send.XXXXXX")
+	trap 'rm -rf "$send_dir"' EXIT HUP INT TERM
+
+	while [ "$#" -gt 1 ]; do
+		file=$1
+		shift
+		base=${file##*/}
+		staged_file=$send_dir/$base
+		container_file=/var/lib/tailscale/${send_dir##*/}/$base
+
+		cp -- "$file" "$staged_file"
+		run-host-root podman exec tailscale-client \
+			tailscale file cp "$container_file" "$tailnet_name:"
+		rm -f "$staged_file"
+	done
+
+	rm -rf "$send_dir"
+	trap - EXIT HUP INT TERM
+}
+
+case $# in
+	0)
+		receive_files
+		;;
+	1)
+		receive_files "$1"
+		;;
+	*)
+		validate_files "$@"
+		send_files "$@"
+		;;
+esac

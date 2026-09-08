@@ -1,7 +1,5 @@
 [Unit]
 Description=AIOStreams
-Requires=comet.container tmdb-addon.container
-After=comet.container tmdb-addon.container
 
 [Container]
 ContainerName=aiostreams
@@ -13,9 +11,6 @@ Environment=ADDON_ID=aiostreams.ebrahim.local
 Environment=BASE_URL=https://aiostreams.aio.{{ vps1.base_domain }}
 Environment="SECRET_KEY={{ homelab.priv_aiostreams_secret_key }}"
 Environment="TEMPLATE_URLS=[\"https://git.tamtaro.de/complete.json\"]"
-Environment=COMET_URL=http://host.containers.internal:8000
-Environment="COMET_PUBLIC_API_TOKEN={{ homelab.priv_comet_public_api_token }}"
-Environment=TMDB_ADDON_URL=http://host.containers.internal:1337
 Environment=LOG_LEVEL=http
 Environment=LOG_FORMAT=text
 Environment=LOG_SENSITIVE_INFO=false

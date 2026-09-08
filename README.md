@@ -2,8 +2,10 @@
 
 Butane/Ignition configs and Podman Quadlet services for my 3 'servers':
 - `vps1`: x86_64 VPS with a public IPv4 and IPv6. Runs VPN (headscale), DNS (blocky), Caddy with Tinyauth and Pocket ID, and more.
-- `homelab`: x86_64 headless PC on my home network. Runs things like media (Jellyfin) and music (Navidrome) servers. Backup target for vps1 and other devices.
+- `homelab`: x86_64 headless PC on my home network. Runs media-streaming and music (Navidrome) services. Backup target for vps1 and other devices.
 - `offsite`: Raspberry Pi 4B booting from a USB-SATA SSD. Clones the backups from homelab for redundancy.
+
+On all three hosts, `cnc` and `tailscale-client` are rootful Quadlets because they need host-level privileges. `cnc` (command and control) is the admin environment: the host filesystem is mounted inside it at `/host`, and its `run-host(-root)` scripts enter the host's UTS, IPC, and network namespaces to manage host systemd and Podman services. They cannot enter the host's PID namespace as a process may only join a descendant PID namespace. `tailscale-client` needs root because it exposes the `tailscale0` interface on the host.
 
 ## Build
 
@@ -76,7 +78,10 @@ the newest release automatically:
 - `HOST/services/root/`: rootful Quadlets.
 - `HOST/services/rootless/`: rootless Quadlets.
 - `HOST/volumes/`: ignored persistent service data.
-- `cnc-shared/`: files shared by the C&C containers.
+- `cnc-shared/`: files shared by the C&C containers. Its scripts are split into
+  `scripts/cnc/` for commands that depend on this container/host setup and
+  `scripts/common/` for portable commands also reused by
+  [`nixos-configs`](https://github.com/ebrahim37/nixos-configs).
 - `secrets.yaml`: SOPS-encrypted service secrets. Keys prefixed with `enc_priv_` are encrypted by SOPS and decrypted by build-services.sh, non-sensitive values are kept plaintext. `build-butane.sh` will error if you use a sensitive value in Butane config as it is meant to be publicly exposed.
 
 Rendered service trees are written to the ignored `HOST/services-dist/` directories,

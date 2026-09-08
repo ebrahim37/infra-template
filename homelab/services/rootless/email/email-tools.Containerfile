@@ -1,4 +1,4 @@
-FROM docker.io/library/alpine:3.22
+FROM docker.io/library/alpine:latest
 
 RUN apk add --no-cache ca-certificates cyrus-sasl-login isync postfix \
 	&& addgroup -g 1000 mbsync \
