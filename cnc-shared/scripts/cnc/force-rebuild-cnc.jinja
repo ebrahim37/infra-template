@@ -1,0 +1,26 @@
+#!/bin/sh
+set -eu
+
+# sometimes, cnc builds will fail because of cached layers being too old
+# use this script to build without cache
+
+scripts_dir=$HOME/infra-template/cnc-shared/scripts/cnc
+unit_dir=/etc/containers/systemd/${HOSTNAME}-root/cnc
+
+run_host_root() {
+	sh "$scripts_dir/run-host-root" "$@"
+}
+
+run_host_root podman build --no-cache --pull=newer \
+	--tag localhost/cnc:latest \
+	--file "$unit_dir/Containerfile" \
+	"$unit_dir"
+
+printf '\nBuild succeeded. Restarting cnc will delete data. Continue? [y/N] ' >/dev/tty
+IFS= read -r answer </dev/tty
+
+case $answer in
+	y | Y | yes | YES | Yes)
+		run_host_root systemctl --no-block restart cnc
+		;;
+esac
