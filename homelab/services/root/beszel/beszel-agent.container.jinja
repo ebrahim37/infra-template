@@ -1,0 +1,28 @@
+[Unit]
+Description=Beszel agent for homelab
+Requires=network-online.target user@1000.service tailscale-client.container
+After=network-online.target user@1000.service tailscale-client.container
+
+[Container]
+ContainerName=beszel-agent
+Image=docker.io/henrygd/beszel-agent:alpine
+Pull=newer
+Network=host
+SecurityLabelDisable=true
+AddDevice=/dev/sdb
+AddCapability=SYS_RAWIO
+Environment="LISTEN={{ homelab.tailnet_ipv4 }}:45876"
+Environment="KEY={{ vps1.beszel_ssh_public_key }}"
+Environment=DOCKER_HOST=unix:///run/user/1000/podman/podman.sock
+Volume=/home/core/infra-template/homelab/volumes/beszel-agent-data:/var/lib/beszel-agent:Z
+Volume=/run/user/1000/podman/podman.sock:/run/user/1000/podman/podman.sock:ro
+Volume=/run/dbus/system_bus_socket:/var/run/dbus/system_bus_socket:ro
+
+[Service]
+TimeoutStartSec=15min
+ExecStartPre=/usr/sbin/runuser -u core -- /usr/bin/env XDG_RUNTIME_DIR=/run/user/1000 /usr/bin/systemctl --user start podman.socket
+ExecStartPre=/bin/sh -c "until /usr/sbin/ip -4 addr show dev tailscale0 2>/dev/null | /usr/bin/grep -Fq '{{ homelab.tailnet_ipv4 }}/'; do /usr/bin/sleep 1; done"
+ExecStartPre=/usr/bin/mkdir -p /home/core/infra-template/homelab/volumes/beszel-agent-data
+
+[Install]
+WantedBy=multi-user.target

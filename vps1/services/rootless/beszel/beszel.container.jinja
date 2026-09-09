@@ -1,0 +1,21 @@
+[Unit]
+Description=Beszel monitoring hub
+Requires=caddy.container
+After=caddy.container
+
+[Container]
+ContainerName=beszel
+Image=docker.io/henrygd/beszel
+Pull=newer
+PublishPort=127.0.0.1:58090:8090
+Environment=APP_URL=https://beszel.{{ vps1.base_domain }}
+Volume=/home/core/infra-template/vps1/volumes/beszel-data:/beszel_data:Z
+Volume=./id_ed25519:/beszel_data/id_ed25519:ro,Z
+Volume=./id_ed25519.pub:/beszel_data/id_ed25519.pub:ro,Z
+
+[Service]
+TimeoutStartSec=15min
+ExecStartPre=/usr/bin/mkdir -p /home/core/infra-template/vps1/volumes/beszel-data
+
+[Install]
+WantedBy=default.target
