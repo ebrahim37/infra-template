@@ -17,6 +17,8 @@ Environment=TS_USERSPACE=false
 Environment=TS_AUTH_ONCE=true
 Environment=TS_HOSTNAME={{ vps1.hostname }}
 Environment=TS_DEBUG_FIREWALL_MODE=nftables
+# fixed tailscale port because a random port sometimes interferes with blocky (like once every two weeks)
+Environment="TS_TAILSCALED_EXTRA_ARGS=--port=30012"
 Environment="TS_EXTRA_ARGS=--login-server=https://headscale.{{ vps1.base_domain }} --advertise-exit-node"
 
 [Service]
