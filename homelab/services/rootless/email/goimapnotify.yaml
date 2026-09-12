@@ -1,0 +1,45 @@
+configurations:
+  - host: imap.gmail.com
+    port: 993
+    tls: true
+    tlsOptions:
+      rejectUnauthorized: true
+      starttls: false
+    idleLogoutTimeout: 10
+    username: {{ homelab.priv_main_email }}
+    passwordCMD: printenv GMAIL_MAIN_APP_PASSWORD
+    boxes:
+      - mailbox: INBOX
+        onNewMail: mbsync --config /etc/mbsyncrc gmail-main:INBOX
+        onChangedMail: mbsync --config /etc/mbsyncrc gmail-main:INBOX
+        onDeletedMail: mbsync --config /etc/mbsyncrc gmail-main:INBOX
+
+  - host: imap.gmail.com
+    port: 993
+    tls: true
+    tlsOptions:
+      rejectUnauthorized: true
+      starttls: false
+    idleLogoutTimeout: 10
+    username: {{ homelab.priv_qa_email }}
+    passwordCMD: printenv GMAIL_QA_APP_PASSWORD
+    boxes:
+      - mailbox: INBOX
+        onNewMail: mbsync --config /etc/mbsyncrc gmail-qa:INBOX
+        onChangedMail: mbsync --config /etc/mbsyncrc gmail-qa:INBOX
+        onDeletedMail: mbsync --config /etc/mbsyncrc gmail-qa:INBOX
+
+  - host: imap.mail.me.com
+    port: 993
+    tls: true
+    tlsOptions:
+      rejectUnauthorized: true
+      starttls: false
+    idleLogoutTimeout: 10
+    username: {{ homelab.priv_icloud_email }}
+    passwordCMD: printenv ICLOUD_APP_PASSWORD
+    boxes:
+      - mailbox: INBOX
+        onNewMail: mbsync --config /etc/mbsyncrc icloud:INBOX
+        onChangedMail: mbsync --config /etc/mbsyncrc icloud:INBOX
+        onDeletedMail: mbsync --config /etc/mbsyncrc icloud:INBOX
