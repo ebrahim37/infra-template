@@ -1,0 +1,19 @@
+[Unit]
+Description=ConvertX file converter
+Requires=caddy.container
+After=caddy.container
+
+[Container]
+ContainerName=convertx
+Image=ghcr.io/c4illin/convertx
+Pull=newer
+PublishPort=127.0.0.1:58321:3000
+Environment=ALLOW_UNAUTHENTICATED=true
+Volume=/home/core/infra-template/vps1/volumes/convertx-data:/app/data:Z
+
+[Service]
+TimeoutStartSec=15min
+ExecStartPre=/usr/bin/mkdir -p /home/core/infra-template/vps1/volumes/convertx-data
+
+[Install]
+WantedBy=default.target
