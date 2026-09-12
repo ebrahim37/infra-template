@@ -9,6 +9,7 @@ Image=docker.io/henrygd/beszel-agent:alpine
 Pull=newer
 Network=host
 SecurityLabelDisable=true
+AddDevice=/dev/sda
 AddDevice=/dev/sdb
 AddCapability=SYS_RAWIO
 Environment="LISTEN={{ homelab.tailnet_ipv4 }}:45876"
