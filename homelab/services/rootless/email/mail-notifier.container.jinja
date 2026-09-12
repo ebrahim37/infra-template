@@ -10,8 +10,6 @@ Pull=never
 UserNS=keep-id
 User=1000:1000
 Exec=/usr/local/bin/mail-notifier
-Environment="NTFY_URL=http://{{ vps1.tailnet_ipv4 }}:2586/email"
-Environment=POLL_SECONDS=5
 Volume=/home/core/infra-template/homelab/volumes/email-maildir:/mail:U,z
 
 [Service]
