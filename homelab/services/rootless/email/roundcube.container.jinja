@@ -14,8 +14,9 @@ Environment=ROUNDCUBEMAIL_DEFAULT_HOST=host.containers.internal
 Environment=ROUNDCUBEMAIL_DEFAULT_PORT=31143
 Environment=ROUNDCUBEMAIL_SMTP_SERVER=host.containers.internal
 Environment=ROUNDCUBEMAIL_SMTP_PORT=10025
-Environment=ROUNDCUBEMAIL_PLUGINS=archive,zipdownload
+Environment=ROUNDCUBEMAIL_PLUGINS=archive,zipdownload,autologin
 Volume=./roundcube-config.php:/var/roundcube/config/email.php:ro,Z
+Volume=./autologin:/entrypoint-tasks/post-setup:ro,Z
 Volume=/home/core/infra-template/homelab/volumes/roundcube-db:/var/roundcube/db:U,Z
 
 [Service]
