@@ -10,6 +10,7 @@ class autologin extends rcube_plugin
     {
         $this->add_hook('startup', [$this, 'startup']);
         $this->add_hook('authenticate', [$this, 'authenticate']);
+        $this->add_hook('login_after', [$this, 'login_after']);
     }
 
     public function startup($args)
@@ -17,6 +18,9 @@ class autologin extends rcube_plugin
         if (empty($_SESSION['user_id'])) {
             $args['task'] = 'login';
             $args['action'] = 'login';
+        } elseif ($args['task'] === 'mail' && empty($args['action']) && !isset($_REQUEST['_mbox'])) {
+            $_GET['_mbox'] = 'gmail main/INBOX';
+            $_REQUEST['_mbox'] = 'gmail main/INBOX';
         }
 
         return $args;
@@ -35,6 +39,14 @@ class autologin extends rcube_plugin
         $args['cookiecheck'] = false;
         $args['valid'] = true;
         $args['abort'] = false;
+
+        return $args;
+    }
+
+    public function login_after($args)
+    {
+        $args['_task'] = 'mail';
+        $args['_mbox'] = 'gmail main/INBOX';
 
         return $args;
     }
