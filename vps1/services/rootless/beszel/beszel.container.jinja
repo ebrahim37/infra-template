@@ -8,6 +8,7 @@ ContainerName=beszel
 Image=docker.io/henrygd/beszel
 Pull=newer
 PublishPort=127.0.0.1:58090:8090
+AddHost=auth.{{ vps1.base_domain }}:host-gateway
 Environment=APP_URL=https://beszel.{{ vps1.base_domain }}
 Environment=DISABLE_PASSWORD_AUTH=true
 Environment=USER_CREATION=true
