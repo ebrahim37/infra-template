@@ -22,12 +22,13 @@ Volume=/run/dbus/system_bus_socket:/run/host-system-bus:ro
 Volume=/run/user/1000/bus:/run/host-user-bus:ro
 Volume=/etc/containers/systemd/%H-root:/quadlets/rootful:ro
 Volume=/home/core/.config/containers/systemd/%H-rootless:/quadlets/rootless:ro
-Volume=quadlet-monitor-state:/var/lib/quadlet-monitor:U
+Volume=/home/core/infra-template/%H/volumes/monitor-state:/var/lib/quadlet-monitor
 
 [Service]
 TimeoutStartSec=15min
 Restart=always
 RestartSec=5s
+ExecStartPre=/usr/bin/mkdir -p /home/core/infra-template/%H/volumes/monitor-state
 
 [Install]
 WantedBy=default.target
