@@ -7,6 +7,7 @@ Image=ghcr.io/bartolomeorusso9/spotiflac
 Pull=newer
 UserNS=keep-id
 PublishPort=54839:8000/tcp
+Environment="SPOTIFLAC_REGISTRIES=https://raw.githubusercontent.com/spotiflacapp/spotiflac-extension/main/registry.json"
 Volume=/home/core/infra-template/homelab/volumes/spotiflac-downloads:/app/downloads:Z
 Volume=/home/core/infra-template/homelab/volumes/spotiflac-data:/home/spotiflac/.spotiflac:Z
 Exec=--web --host 0.0.0.0 --port 8000
