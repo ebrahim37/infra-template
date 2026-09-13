@@ -17,7 +17,6 @@ Environment=MONITOR_HOST=%H
 Environment=NTFY_URL=http://100.64.0.1:2586
 Environment=DBUS_SYSTEM_BUS_ADDRESS=unix:path=/run/dbus/system_bus_socket
 Environment=DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus
-Environment=XDG_RUNTIME_DIR=/run/user/1000
 Environment=SYSTEMD_PAGER=cat
 Volume=/run/dbus/system_bus_socket:/run/dbus/system_bus_socket:ro
 Volume=/run/user/1000/bus:/run/user/1000/bus:ro
