@@ -1,0 +1,16 @@
+#!/bin/sh
+set -eu
+
+inbox=/host/home/core/infra-template/homelab/volumes/spotiflac-downloads
+library=/host/home/core/infra-template/homelab/volumes/navidrome-music/library
+
+mkdir -p "$inbox" "$library"
+
+if ! find "$inbox" -type f -print -quit | grep -q .; then
+	echo "SpotiFLAC inbox is empty; nothing to import."
+	exit 0
+fi
+
+rsgain easy "$inbox"
+rsync -a --remove-source-files "$inbox/" "$library/"
+find "$inbox" -mindepth 1 -depth -type d -empty -delete
