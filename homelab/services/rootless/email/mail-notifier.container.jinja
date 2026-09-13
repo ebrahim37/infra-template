@@ -1,7 +1,7 @@
 [Unit]
 Description=Notify ntfy about new synchronized email
-Requires=mbsync.container
-After=mbsync.container
+Requires=dovecot.container mbsync.container
+After=dovecot.container mbsync.container
 
 [Container]
 ContainerName=mail-notifier

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import os
+import imaplib
 import time
 import urllib.error
 import urllib.request
@@ -8,12 +8,17 @@ from email.header import Header
 from email.parser import BytesHeaderParser
 from email.utils import getaddresses, parseaddr
 from pathlib import Path
+from urllib.parse import urlencode
 
 MAIL_ROOT = Path("/mail")
 NTFY_URL = "http://100.64.0.1:2586/email"
+ROUNDCUBE_URL = "http://homelab.ebra.devices:63146/"
+DOVECOT_HOST = "host.containers.internal"
+DOVECOT_PORT = 31143
+DOVECOT_USER = "mail-notifier"
+DOVECOT_PASSWORD = "1234"
 POLL_SECONDS = 5.0
 HTTP_TIMEOUT_SECONDS = 15.0
-QUEENS_ADDRESS = "{{ homelab.priv_queens_email }}"
 
 def log(message):
     print(time.strftime("%Y-%m-%dT%H:%M:%S%z"), message, flush=True)
@@ -32,25 +37,77 @@ def sender_name(value):
         return clean_header(address.partition("@")[0], "Unknown sender")[:200]
     return "Unknown sender"
 
-def account_label(path, headers):
+def recipient_label(headers):
     recipients = getaddresses(str(value) for value in headers.get_all("To", []))
-    if any(address.casefold() == QUEENS_ADDRESS for _, address in recipients):
+    addresses = {address.casefold() for _, address in recipients}
+    if { homelab.priv_queens_email } in addresses:
         return "queens"
-    if path.parents[2].name == "icloud":
+    if { homelab.priv_icloud_email } in addresses:
         return "icloud"
-    return "gmail"
+    if { homelab.priv_qa_email } in addresses:
+        return "qa"
+    return None
 
 def message_details(path):
     with path.open("rb") as mail:
         headers = BytesHeaderParser(policy=policy.default).parse(mail, headersonly=True)
     return (
-        account_label(path, headers),
+        f"{path.parents[2].name}/INBOX",
+        recipient_label(headers),
         sender_name(headers.get("From")),
         clean_header(headers.get("Subject"), "(no subject)"),
+        clean_header(headers.get("Message-ID"), ""),
     )
 
-def publish(account, sender, subject):
-    title = f"{sender} ({account})"
+def imap_quote(value):
+    return '"' + value.replace("\\", "\\\\").replace('"', '\\"') + '"'
+
+def uid_from_uidlist(path):
+    wanted_name = path.name.split(":2,", 1)[0]
+    uidlist = path.parent.parent / "dovecot-uidlist"
+    with uidlist.open(encoding="utf-8") as uid_file:
+        for line in uid_file:
+            metadata, separator, filename = line.rstrip("\n").partition(" :")
+            if not separator or filename.split(":2,", 1)[0] != wanted_name:
+                continue
+            uid = metadata.split(" ", 1)[0]
+            if uid.isdigit():
+                return uid
+    return None
+
+def dovecot_uid(path, mailbox, message_id):
+    client = imaplib.IMAP4(DOVECOT_HOST, DOVECOT_PORT, timeout=HTTP_TIMEOUT_SECONDS)
+    try:
+        client.login(DOVECOT_USER, DOVECOT_PASSWORD)
+        status, _ = client.select(imap_quote(mailbox), readonly=True)
+        if status != "OK":
+            raise RuntimeError(f"Dovecot could not select {mailbox}")
+
+        if message_id:
+            status, data = client.uid(
+                "SEARCH", None, "HEADER", "Message-ID", imap_quote(message_id)
+            )
+            if status == "OK" and data and data[0]:
+                uids = [uid for uid in data[0].split() if uid.isdigit()]
+                if uids:
+                    return str(max(int(uid) for uid in uids))
+    finally:
+        try:
+            client.logout()
+        except imaplib.IMAP4.error:
+            pass
+
+    uid = uid_from_uidlist(path)
+    if uid is None:
+        raise RuntimeError(f"Dovecot UID is not available yet for {path}")
+    return uid
+
+def roundcube_link(mailbox, uid):
+    query = urlencode((('_task', 'mail'), ('_uid', uid), ('_mbox', mailbox)))
+    return f"{ROUNDCUBE_URL}?{query}"
+
+def publish(label, sender, subject, link):
+    title = f"{sender} ({label})" if label else sender
     try:
         title.encode("ascii")
     except UnicodeEncodeError:
@@ -62,6 +119,7 @@ def publish(account, sender, subject):
         headers={
             "Content-Type": "text/plain; charset=utf-8",
             "Title": title,
+            "Click": link,
         },
         method="POST",
     )
@@ -104,17 +162,24 @@ while True:
         path_key = str(path)
         try:
             if path_key not in notified:
-                account, sender, subject = message_details(path)
-                publish(account, sender, subject)
+                mailbox, label, sender, subject, message_id = message_details(path)
+                uid = dovecot_uid(path, mailbox, message_id)
+                publish(label, sender, subject, roundcube_link(mailbox, uid))
                 notified.add(path_key)
-                log(f"notified for {account}: {subject}")
+                log(f"notified: {subject}")
 
             mark_seen(path)
             notified.discard(path_key)
             log(f"marked read: {path}")
         except FileNotFoundError:
             notified.discard(path_key)
-        except (OSError, ValueError, RuntimeError, urllib.error.URLError) as error:
+        except (
+            OSError,
+            ValueError,
+            RuntimeError,
+            imaplib.IMAP4.error,
+            urllib.error.URLError,
+        ) as error:
             log(f"will retry {path}: {error}")
 
     time.sleep(POLL_SECONDS)
