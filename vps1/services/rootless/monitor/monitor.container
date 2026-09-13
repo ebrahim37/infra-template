@@ -15,11 +15,13 @@ DropCapability=all
 SecurityLabelDisable=true
 Environment=MONITOR_HOST=%H
 Environment=NTFY_URL=http://100.64.0.1:2586
-Environment=DBUS_SYSTEM_BUS_ADDRESS=unix:path=/run/host-system-bus
-Environment=DBUS_SESSION_BUS_ADDRESS=unix:path=/run/host-user-bus
+Environment=DBUS_SYSTEM_BUS_ADDRESS=unix:path=/run/dbus/system_bus_socket
+Environment=DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus
+Environment=XDG_RUNTIME_DIR=/run/user/1000
 Environment=SYSTEMD_PAGER=cat
-Volume=/run/dbus/system_bus_socket:/run/host-system-bus:ro
-Volume=/run/user/1000/bus:/run/host-user-bus:ro
+Volume=/run/dbus/system_bus_socket:/run/dbus/system_bus_socket:ro
+Volume=/run/user/1000/bus:/run/user/1000/bus:ro
+Volume=/run/systemd/system:/run/systemd/system:ro
 Volume=/etc/containers/systemd/%H-root:/quadlets/rootful:ro
 Volume=/home/core/.config/containers/systemd/%H-rootless:/quadlets/rootless:ro
 Volume=/home/core/infra-template/%H/volumes/monitor-state:/var/lib/quadlet-monitor
