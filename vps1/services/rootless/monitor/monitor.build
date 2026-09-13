@@ -1,0 +1,14 @@
+[Unit]
+Description=Build Quadlet service monitor image
+
+[Build]
+ImageTag=localhost/quadlet-monitor:latest
+File=./Containerfile
+SetWorkingDirectory=unit
+Pull=newer
+
+[Service]
+TimeoutStartSec=15min
+
+[Install]
+WantedBy=default.target

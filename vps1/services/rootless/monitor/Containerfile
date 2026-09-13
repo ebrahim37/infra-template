@@ -1,0 +1,9 @@
+FROM registry.fedoraproject.org/fedora-minimal:latest
+
+RUN microdnf -y install curl findutils systemd \
+    && microdnf clean all
+
+COPY --chmod=0755 monitor.sh /usr/local/bin/quadlet-monitor
+
+USER 1000:1000
+ENTRYPOINT ["/usr/local/bin/quadlet-monitor"]

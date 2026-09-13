@@ -132,7 +132,12 @@ podman run --rm --interactive \
 		if ! .venv/bin/python -m pip show copier >/dev/null 2>&1; then
 			.venv/bin/python -m pip install copier
 		fi
-		.venv/bin/copier copy --quiet --data-file /tmp/secrets.yaml "$1/services" "$1/services-dist"
+		# each host tree may share implementation files with relative symlinks.
+		# for eg. monitor on homelab/offsite is symlinked to vps1/services/rootless/monitor/...
+		# render these before Copier because it does not allow symlinks outside of each HOSTNAME dir
+		mkdir -p /tmp/services
+		cp -aL "$1/services"/. /tmp/services/
+		.venv/bin/copier copy --quiet --data-file /tmp/secrets.yaml /tmp/services "$1/services-dist"
 		.venv/bin/copier copy --quiet --data-file /tmp/secrets.yaml cnc-shared "$1/services-dist/root/cnc/cnc-shared"
 	' sh "$host_name"
 rm -f "$host_dir/services/copier.yml" "$repo_dir/cnc-shared/copier.yml"
