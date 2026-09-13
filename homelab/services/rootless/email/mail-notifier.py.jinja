@@ -62,13 +62,25 @@ def message_details(path):
 def imap_quote(value):
     return '"' + value.replace("\\", "\\\\").replace('"', '\\"') + '"'
 
+def maildir_basename(name):
+    return name.split(":2,", 1)[0]
+
+def message_key(path):
+    return str(path.parent.parent / maildir_basename(path.name))
+
+def is_unread(path):
+    if path.parent.name == "new":
+        return True
+    _, separator, flags = path.name.rpartition(":2,")
+    return not separator or "S" not in flags
+
 def uid_from_uidlist(path):
-    wanted_name = path.name.split(":2,", 1)[0]
+    wanted_name = maildir_basename(path.name)
     uidlist = path.parent.parent / "dovecot-uidlist"
     with uidlist.open(encoding="utf-8") as uid_file:
         for line in uid_file:
             metadata, separator, filename = line.rstrip("\n").partition(" :")
-            if not separator or filename.split(":2,", 1)[0] != wanted_name:
+            if not separator or maildir_basename(filename) != wanted_name:
                 continue
             uid = metadata.split(" ", 1)[0]
             if uid.isdigit():
@@ -133,17 +145,39 @@ def seen_name(name):
     base, flags = name.rsplit(":2,", 1)
     return f"{base}:2,{''.join(sorted(set(flags + 'S')))}"
 
+def current_message_path(path):
+    if path.exists():
+        return path
+
+    wanted_name = maildir_basename(path.name)
+    inbox = path.parent.parent
+    for directory_name in ("new", "cur"):
+        directory = inbox / directory_name
+        try:
+            for candidate in directory.iterdir():
+                if candidate.is_file() and maildir_basename(candidate.name) == wanted_name:
+                    return candidate
+        except FileNotFoundError:
+            continue
+    raise FileNotFoundError(path)
+
 def mark_seen(path):
+    path = current_message_path(path)
     destination = path.parent.parent / "cur" / seen_name(path.name)
     path.replace(destination)
 
 def new_messages():
     messages = []
-    for new_dir in MAIL_ROOT.glob("*/INBOX/new"):
-        try:
-            messages.extend(path for path in new_dir.iterdir() if path.is_file())
-        except FileNotFoundError:
-            continue
+    for inbox in MAIL_ROOT.glob("*/INBOX"):
+        for directory_name in ("new", "cur"):
+            directory = inbox / directory_name
+            try:
+                messages.extend(
+                    path for path in directory.iterdir()
+                    if path.is_file() and is_unread(path)
+                )
+            except FileNotFoundError:
+                continue
     return sorted(messages, key=lambda path: (path.stat().st_mtime_ns, str(path)))
 
 notified = set()
@@ -155,11 +189,11 @@ while True:
         time.sleep(POLL_SECONDS)
         continue
 
-    current_paths = {str(path) for path in messages}
+    current_paths = {message_key(path) for path in messages}
     notified.intersection_update(current_paths)
 
     for path in messages:
-        path_key = str(path)
+        path_key = message_key(path)
         try:
             if path_key not in notified:
                 mailbox, label, sender, subject, message_id = message_details(path)
