@@ -40,11 +40,11 @@ def sender_name(value):
 def recipient_label(headers):
     recipients = getaddresses(str(value) for value in headers.get_all("To", []))
     addresses = {address.casefold() for _, address in recipients}
-    if { homelab.priv_queens_email } in addresses:
+    if "{{ homelab.priv_queens_email }}" in addresses:
         return "queens"
-    if { homelab.priv_icloud_email } in addresses:
+    if "{{ homelab.priv_icloud_email }}" in addresses:
         return "icloud"
-    if { homelab.priv_qa_email } in addresses:
+    if "{{ homelab.priv_qa_email }}" in addresses:
         return "qa"
     return None
 
