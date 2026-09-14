@@ -1,0 +1,5 @@
+memory:
+  backend: off
+
+extensions:
+  - ~/.config/omp/extensions

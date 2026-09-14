@@ -1,4 +1,4 @@
 #!/bin/sh
-mkdir -p /data/oh-my-pi || exit
 export PI_CODING_AGENT_DIR=/data/oh-my-pi
+export PI_CONFIG_FILES="$HOME/.config/omp/config.yml"
 exec /usr/local/bin/omp "$@"
