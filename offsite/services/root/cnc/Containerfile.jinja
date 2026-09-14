@@ -88,9 +88,16 @@ RUN printf '%s\n' '{{ shared.ssh_authorized_key }}' > /home/ebrahim/.ssh/authori
 	&& chmod +x /home/ebrahim/scripts/* \
 	&& su - ebrahim -c 'PNPM_HOME=/home/ebrahim/.local/share/pnpm PATH=/home/ebrahim/.local/share/pnpm/bin:/usr/local/bin:/usr/bin:/bin pnpm add --global @openai/codex http-server'
 
-RUN curl -fsSL https://omp.sh/install -o /tmp/install-omp.sh \
-	&& PI_INSTALL_DIR=/usr/local/bin sh /tmp/install-omp.sh --binary \
-	&& rm /tmp/install-omp.sh
+RUN case "$(uname -m)" in \
+		x86_64|amd64) omp_arch=x64 ;; \
+		aarch64|arm64) omp_arch=arm64 ;; \
+		*) echo "Unsupported architecture: $(uname -m)" >&2; exit 1 ;; \
+	esac \
+	&& curl -fsSL --retry 3 --retry-all-errors \
+		"https://github.com/can1357/oh-my-pi/releases/latest/download/omp-linux-musl-${omp_arch}" \
+		-o /usr/local/bin/omp \
+	&& chmod 0755 /usr/local/bin/omp \
+	&& /usr/local/bin/omp --version
 
 STOPSIGNAL SIGTERM
 
