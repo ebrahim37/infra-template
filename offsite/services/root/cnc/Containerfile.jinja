@@ -13,6 +13,8 @@ RUN apk add --no-cache \
 		exfatprogs \
 		git \
 		less \
+		libgcc \
+		libstdc++ \
 		ncdu \
 		ncurses-terminfo \
 		neovim \
@@ -85,6 +87,10 @@ RUN printf '%s\n' '{{ shared.ssh_authorized_key }}' > /home/ebrahim/.ssh/authori
 	&& ln -s /host/home/core/infra-template /home/ebrahim/infra-template \
 	&& chmod +x /home/ebrahim/scripts/* \
 	&& su - ebrahim -c 'PNPM_HOME=/home/ebrahim/.local/share/pnpm PATH=/home/ebrahim/.local/share/pnpm/bin:/usr/local/bin:/usr/bin:/bin pnpm add --global @openai/codex http-server'
+
+RUN curl -fsSL https://omp.sh/install -o /tmp/install-omp.sh \
+	&& PI_INSTALL_DIR=/usr/local/bin sh /tmp/install-omp.sh --binary \
+	&& rm /tmp/install-omp.sh
 
 STOPSIGNAL SIGTERM
 

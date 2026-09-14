@@ -83,6 +83,10 @@ RUN git clone --depth=1 https://aur.archlinux.org/yay-bin.git /tmp/yay-bin \
 	&& su - ebrahim -c '/home/ebrahim/scripts/ya -Yc --noconfirm && /home/ebrahim/scripts/ya -Scc --noconfirm' \
 	&& su - ebrahim -c 'PNPM_HOME=/home/ebrahim/.local/share/pnpm PATH=/home/ebrahim/.local/share/pnpm/bin:/usr/bin pnpm add --global @openai/codex http-server'
 
+RUN curl -fsSL https://omp.sh/install -o /tmp/install-omp.sh \
+	&& PI_INSTALL_DIR=/usr/local/bin sh /tmp/install-omp.sh --binary \
+	&& rm /tmp/install-omp.sh
+
 STOPSIGNAL SIGRTMIN+3
 
 ENTRYPOINT ["/sbin/init"]

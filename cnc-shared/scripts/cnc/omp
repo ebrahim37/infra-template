@@ -1,0 +1,4 @@
+#!/bin/sh
+mkdir -p /data/oh-my-pi || exit
+export PI_CODING_AGENT_DIR=/data/oh-my-pi
+exec /usr/local/bin/omp "$@"
