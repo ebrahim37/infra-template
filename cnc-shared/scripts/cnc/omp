@@ -8,6 +8,6 @@ if [ ! -e /data/oh-my-pi/agent/extensions ] && [ ! -L /data/oh-my-pi/agent/exten
 		|| [ -L /data/oh-my-pi/agent/extensions ]
 fi
 
-export PI_CONFIG_DIR=/data/oh-my-pi
+export PI_CONFIG_DIR=../../data/oh-my-pi
 export PI_CONFIG_FILES="$HOME/.config/omp/shared.yml"
 exec /usr/local/bin/omp "$@"
