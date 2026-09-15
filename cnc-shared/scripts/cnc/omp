@@ -1,4 +1,13 @@
 #!/bin/sh
+set -eu
+
+mkdir -p /data/oh-my-pi
+if [ ! -e /data/oh-my-pi/extensions ] && [ ! -L /data/oh-my-pi/extensions ]; then
+	ln -s "$HOME/.config/omp/extensions" /data/oh-my-pi/extensions 2>/dev/null \
+		|| [ -e /data/oh-my-pi/extensions ] \
+		|| [ -L /data/oh-my-pi/extensions ]
+fi
+
 export PI_CODING_AGENT_DIR=/data/oh-my-pi
-export PI_CONFIG_FILES="$HOME/.config/omp/config.yml"
+export PI_CONFIG_FILES="$HOME/.config/omp/shared.yml"
 exec /usr/local/bin/omp "$@"

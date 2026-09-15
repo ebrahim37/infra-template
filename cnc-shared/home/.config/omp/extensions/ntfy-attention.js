@@ -10,6 +10,7 @@ export default function ntfyAttention(pi) {
 	const ntfyUrl = process.env.OMP_NTFY_URL || DEFAULT_NTFY_URL;
 	const hostname = process.env.HOSTNAME || "cnc";
 	const notifiedToolCalls = new Set();
+	pi.setLabel("ntfy attention");
 
 	function publish(message, tags) {
 		void fetch(ntfyUrl, {
@@ -65,5 +66,13 @@ export default function ntfyAttention(pi) {
 
 	pi.on("tool_result", event => {
 		notifiedToolCalls.delete(event.toolCallId);
+	});
+
+	pi.registerCommand("ntfy-test", {
+		description: "Send a test attention notification",
+		handler: (_args, context) => {
+			publish(`Test notification from ${projectName(context.cwd)}.`, "robot,test_tube");
+			context.ui.notify(`Sent a test notification to ${ntfyUrl}`, "info");
+		},
 	});
 }
