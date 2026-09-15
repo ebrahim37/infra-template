@@ -1,3 +1,5 @@
+import { hostname as getHostname } from "node:os";
+
 const DEFAULT_NTFY_URL = "http://100.64.0.1:2586/omp";
 const REQUEST_TIMEOUT_MS = 5_000;
 
@@ -8,7 +10,7 @@ function projectName(cwd) {
 
 export default function ntfyAttention(pi) {
 	const ntfyUrl = process.env.OMP_NTFY_URL || DEFAULT_NTFY_URL;
-	const hostname = process.env.HOSTNAME || "cnc";
+	const hostname = process.env.HOSTNAME || getHostname() || "cnc";
 	const notifiedToolCalls = new Set();
 	pi.setLabel("ntfy attention");
 
