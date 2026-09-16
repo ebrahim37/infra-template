@@ -24,6 +24,7 @@ args=(iso customize --dest-device "$DEST_DEVICE" --dest-ignition /work/config.ig
 [[ -z ${DEST_KARG:-} ]] || args+=(--dest-karg-append "$DEST_KARG")
 
 out=$host.iso
+# for raspberry pi
 if [[ -n ${EDK2_VERSION:-} ]]; then
 	url=https://github.com/pftf/RPi4/releases/download/$EDK2_VERSION/RPi4_UEFI_Firmware_$EDK2_VERSION.zip
 	curl -fL "$url" -o "$tmp/edk2.zip"

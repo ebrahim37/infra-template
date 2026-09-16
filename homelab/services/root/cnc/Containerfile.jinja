@@ -2,7 +2,7 @@ FROM docker.io/library/archlinux:base
 
 # ydl script needs rsgain (aur), mid3v2 (python-mutagen) and yt-dlp
 # yt-dlp needs ffmpeg
-# picard script needs rsgain and rsync
+# import-spotiflac script needs rsgain and rsync
 RUN pacman -Syu --noconfirm --needed \
 	age \
 	base-devel \

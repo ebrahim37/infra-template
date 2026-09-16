@@ -1,61 +1,105 @@
 # Fedora CoreOS configs
 
-Butane/Ignition configs and Podman Quadlet services for my 3 'servers':
-- `vps1`: x86_64 VPS with a public IPv4 and IPv6. Runs VPN (headscale), DNS (blocky), Caddy with Tinyauth and Pocket ID, and more.
-- `homelab`: x86_64 headless PC on my home network. Runs media-streaming and music (Navidrome) services. Backup target for vps1 and other devices.
-- `offsite`: Raspberry Pi 4B booting from a USB-SATA SSD. Clones the backups from homelab for redundancy.
+This repo delaratively defines my headless 'server' hosts through Butane configs (`*/butane`) and Podman Quadlets (`*/services`).
+These folders contain Jinja templates which are rendered by [Copier](https://copier.readthedocs.io).
 
-On all three hosts, `cnc` and `tailscale-client` are rootful Quadlets because they need host-level privileges. `cnc` (command and control) is the admin environment: the host filesystem is mounted inside it at `/host`, and its `run-host(-root)` scripts enter the host's UTS, IPC, and network namespaces to manage host systemd and Podman services. They cannot enter the host's PID namespace as a process may only join a descendant PID namespace. `tailscale-client` needs root because it exposes the `tailscale0` interface on the host.
+I tried to make this as 'turnkey' as possible but there's still a lot of hardcoded things specific to my setup. Use this repo as an example for setting up your own infra.
 
-## Build
+Public config vars (hostnames, tailnet IPs, etc) and secrets (encrypted with [SOPS](https://github.com/getsops/sops)) are managed in `secrets.yaml`, grouped by host (`shared.*` vars are used by all hosts).
 
-The `build-*` scripts use Podman so Butane, Copier etc. don't need to be installed.
+Some details about the hosts:
+- `vps1`: x86_64 VPS with a public IPv4 and IPv6. Runs VPN (headscale), DNS (blocky), Caddy with Tinyauth, Pocket ID, and more.
+- `homelab`: x86_64 headless PC on home network. Runs media streaming, music (Navidrome), and more. Also the primary backup target for my devices.
+- `offsite`: Raspberry Pi 4B booting from a USB-SATA SSD. Clones the backups from homelab for redundancy. EEPROM may need to be updated (see [here](#raspberry-pi-eeprom-update)).
 
-```sh
-./build-butane.sh HOST # renders HOST/butane/config.ign
-./build-iso.sh HOST # creates isos/HOST.iso for unattended install to DEST_DEVICE set in HOST/installer.env
-./build-services.sh HOST # renders and deploys the host's quadlet files, updated services must be restarted
-```
+All hosts have these 4 services:
+- `root/tailscale-client`: Connects to headscale tailnet (running on `vps1`), advertises exit node, and subnets (on `homelab` and `offsite`). Has `Network=host` so the interface is available everywhere (including containers).
+- `root/cnc`: Arch Linux container used for administration, development etc. (`offsite` cnc is Alpine because ARM). Has CoreOS root mounted at `/host`, a persisted `/data` mount, `Network=host`, `UserNS=host`, and also has a bunch of convenience scripts:
+  - `run-host(-root)`: Runs a command on the CoreOS host.
+  - `rebuild-services`: git pull this repo, then run build-services for this host. You will also need to restart changed services manually (eg. `hsc restart blocky`).
+  - `rebuild-cnc`: Rerun the Containerfile for this image, then prompt to restart.
+  - `force-rebuild-cnc`: Sometimes, the cached `RUN pacman -Syu ...` step is too old and causes errors. Use this to rebuild cnc without cached layers.
+  - `list-services`: Lists status of all rootful and rootless quadlets.
+  - `start/stop-services`: Start/stop all rootful and rootless quadlets, with progress bar.
+  - `ports`: Show all listening ports. On `vps1`, livekit ports are filtered out.
+  - `td`: Send/receive files with taildrop. I mostly use this to send files to/from my phone, because I can't use croc there.
+  - `(s)croc`: Send/receive files with croc. Uses croc-relay hosted on `vps1`. Don't need to copy a secret because it is preset in the script. `scroc` receives as root.
+  - `ll(h)`: List files in directory with [eza](https://github.com/eza-community/eza). `llh` shows hidden.
+  - `(p)http`: Runs [http-server](https://www.npmjs.com/package/http-server) on a given port. `phttp` listens on tailscale interface only. `vps1` additionally has `(p)https` which uses the SSL cert from caddy.
+  - `btop`: Wrapper around [btop](https://github.com/aristocratos/btop) that lists host processes as well.
+  - `codex/omp`: Wrappers around codex and oh-my-pi that store data under `/data` so session/auth info stays after container rebuild.
+  - `npm, (s)vi, (s)nvi, ya`: Wrappers around npm, Vim, Neovim, and yay. These wrappers are to prevent these programs from polluting $HOME. `svi/snvi` run Vim/Neovim as root.
+  - (alias) `(h)sc/(h)jc`: Alias to `systemctl --user` and `journalctl --user -u`. `hsc/hjc` run on host.
+  - (alias) `(h)ssc/(h)jjc`: Alias to `sudo systemctl` and `journalctl -u`. `hssc/hjjc` runs on host.
+  - `format-usb`: Format a plugged-in USB to exFAT. Not available on `vps1`.
 
-## ISO installation
+  `cnc-shared/` contains configs and scripts to be copied into cnc containers. `cnc-shared/scripts` is split into `cnc` and `common`, the `common` scripts are used/cloned by my [NixOS config](https://github.com/ebrahim37/nixos-configs).
+  
+  This container also runs an ssh server on port 222, with same authorized_keys and host keys as CoreOS. Waypipe is also installed in the cnc containers, so I can remotely access GUI programs with for eg. `waypipe ssh homelab firefox` from any wayland host.
 
-To build the unattended installer (no screen or keyboard needed) for a host, first build the Ignition config, then the ISO.
+  The tmux config gives every SSH connection a persistent, mostly invisible tmux environment with shared sessions/windows.
+- `root/beszel`: [Beszel](https://www.beszel.dev/) agent reporting to Beszel instance running on `vps1`. Keeps track of running services (not including rootless quadlets), resource usage, and S.M.A.R.T. status of connected disks (`vps1`'s agent is rootless because it doesn't need S.M.A.R.T. monitoring).
+- `rootless/monitor`: Small Fedora container keeping track of rootful+rootless quadlets. If a container is down for at least 10 minutes, sends a notification via [ntfy](https://ntfy.sh/) instance running on `vps1`.
+
+Persistent data for all containers (including cnc) is placed in `HOST/volumes`. Containers will automatically mkdir their volumes if they don't exist. Make sure this `volumes` directory is backed up on all hosts.
+
+
+## Dependencies
+
+- [SOPS](https://github.com/getsops/sops) and [age](https://github.com/FiloSottile/age) for editing `secrets.yaml`. Also generate an age key with:
+  ```sh
+  mkdir -p ~/.config/sops/age
+  age-keygen -o ~/.config/sops/age/keys.txt
+  ```
+- podman for running the `build-*` scripts.
+
+These are installed inside the `cnc` containers as well.
+
+
+## Installing CoreOS
+
+First, configure `HOST/butane/config.bu.jinja` to your needs, then build the Ignition file:
 ```sh
 ./build-butane.sh HOST
-./build-iso.sh HOST
 ```
 
-You can then write the resulting `isos/HOST.iso` to a USB (change /dev/sdX to your USB device):
+You can then either use the standard CoreOS ISO and run:
 ```sh
-sudo dd if=isos/HOST.iso of=/dev/sdX bs=4M status=progress conv=fsync
+sudo coreos-installer install /dev/sda --ignition-url https://raw.githubusercontent.com/ebrahim37/infra-template/refs/heads/main/HST/butane/config.ign
 ```
-Or you can use something like Rufus but make sure to use DD mode.
 
-For x86_64 hosts, the ISO skips the automatic reboot so we don't reboot and install FCOS again.
+Or make a bootable USB with the Ignition file embedded:
+```sh
+./build-iso.sh HOST
+sudo dd if=isos/HOST.iso of=/dev/sdX bs=4M status=progress conv=fsync
+rm -rf isos
+```
+The bootable USB does not need a keyboard or screen to install. For x86_64 hosts, the ISO skips the automatic reboot so we don't reboot and install FCOS again.
 Remove the USB before rebooting.
 
-`offsite` is aarch64 and needs extra Raspberry Pi boot support. Its ISO includes
-PFTF EDK2 and the FCOS EFI loader in an appended Pi boot partition, applies the
-configured USB-SATA kernel quirk to both the installer and installed system,
-and copies EDK2 to the SSD's EFI System Partition after installing.
-For Raspberry Pis, the ISO shuts down the Pi so we can visually tell the install finished.
+The machine will reboot once after initial install to install packages with `rpm-ostree` (git, sops, etc.).
+Get the IP address of the machine (maybe from your router's DHCP page) and ssh in.
 
-Post-install, get the IP address of the machine (maybe from your router's DHCP page) and run `ssh core@IP`.
 
-## Service deployment
+## Starting services
 
-After installing a host, place the SOPS age identity at:
+After install, the `infra-template` repo should be automatically cloned to `/home/core/infra-template`. We just need to copy our age key to `/home/core/.config/sops/age/keys.txt` so that `secrets.yaml` can be decrypted.
 
-```text
-~/.config/sops/age/keys.txt
-```
-
-Then deploy its services:
-
+Then, configure `HOST/services/` to your liking, and run:
 ```sh
 cd ~/infra-template
 ./build-services.sh HOST
 ```
+Rendered services are written to the ignored `HOST/services-dist/` directory, then synced to `/etc/containers/systemd/HOST-root` and `~/.config/containers/systemd/HOST-rootless`. We do this so that for eg. `vps1/services/rootless/caddy/conf/Caddyfile` is not unmounted from the caddy container.
+
+For first boot, we need to manually start each service:
+```
+sudo systemctl start tailscale-client
+sudo systemctl start cnc
+...
+```
+Or you can start cnc and run `start-services` from there.
+
 
 ## Pinned container images
 
@@ -72,20 +116,6 @@ the newest release automatically:
   [`update-rybbit` skill](vps1/services/rootless/rybbit/update-rybbit/SKILL.md)
   to review the upstream changes and update all containers together.
 
-## Layout
-
-- `HOST/butane/`: Butane template and generated Ignition config.
-- `HOST/services/root/`: rootful Quadlets.
-- `HOST/services/rootless/`: rootless Quadlets.
-- `HOST/volumes/`: ignored persistent service data.
-- `cnc-shared/`: files shared by the C&C containers. Its scripts are split into
-  `scripts/cnc/` for commands that depend on this container/host setup and
-  `scripts/common/` for portable commands also reused by
-  [`nixos-configs`](https://github.com/ebrahim37/nixos-configs).
-- `secrets.yaml`: SOPS-encrypted service secrets. Keys prefixed with `enc_priv_` are encrypted by SOPS and decrypted by build-services.sh, non-sensitive values are kept plaintext. `build-butane.sh` will error if you use a sensitive value in Butane config as it is meant to be publicly exposed.
-
-Rendered service trees are written to the ignored `HOST/services-dist/` directories,
-and then synced to `/etc/containers/systemd/HOST-root` and `~/.config/containers/systemd/HOST-rootless`.
 
 ## Raspberry Pi EEPROM update
 
