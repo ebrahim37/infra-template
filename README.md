@@ -60,7 +60,7 @@ First, configure `HOST/butane/config.bu.jinja`, then build its Ignition file:
 ```sh
 ./build-butane.sh HOST
 ```
-Note: this script aborts if there are `enc_priv_*` vars used in the butane config. This is because the resulting ignition file meant to be publicly visible, so that provisioning machines is a bit easier.
+Note: this script aborts if there are `enc_priv_*` vars used in the butane config. This is because the resulting ignition file is meant to be publicly visible, so that provisioning machines is a bit easier.
 
 You can then boot the standard Fedora CoreOS ISO and run:
 ```sh
