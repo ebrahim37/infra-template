@@ -15,6 +15,9 @@ The hosts are:
 These services run on all hosts:
 - `root/tailscale-client`: Connects to the Headscale tailnet hosted on `vps1`. Every host advertises itself as an exit node, `homelab` and `offsite` also advertise subnet routes. `Network=host` makes the Tailscale interface available to the host and its containers.
 - `root/cnc`: An Arch Linux container for administration and development. The `offsite` container uses Alpine instead because it runs on ARM. The container mounts the CoreOS root at `/host`, persists `/data`, uses `Network=host` and `UserNS=host`, and includes several convenience scripts:
+  <details>
+  <summary>See scripts</summary>
+
   - `run-host` and `run-host-root`: Run a command on the CoreOS host as `core` or `root`, respectively.
   - `rebuild-services`: Pull the latest changes from this repository, then run `build-services.sh` for the current host. Changed services must still be restarted manually (for example, with `hsc restart blocky`).
   - `rebuild-cnc`: Rebuild the container image from its Containerfile, then offer to restart the container.
@@ -32,6 +35,8 @@ These services run on all hosts:
   - Aliases `sc`/`jc` and `hsc`/`hjc`: Run `systemctl --user` and `journalctl --user -u`, respectively. The `h` variants run on the CoreOS host.
   - Aliases `ssc`/`jjc` and `hssc`/`hjjc`: Run `sudo systemctl` and `journalctl -u`, respectively. The `h` variants run on the CoreOS host.
   - `format-usb`: Format a connected USB drive as exFAT. This command is not available on `vps1`.
+
+  </details>
 
   `cnc-shared/` contains configuration files and scripts copied into the `cnc` containers. Its `scripts/` directory is split into `cnc/` and `common/`; the latter is shared with my [NixOS configuration](https://github.com/ebrahim37/nixos-configs).
 
@@ -101,12 +106,18 @@ Alternatively, start `cnc`, then run `start-services` inside it.
 
 ## Pinned container images
 
+<details>
+
 Some container image versions are intentionally pinned rather than updated to the newest release automatically:
 - TinyAuth and Pocket ID authenticate users for Caddy-protected services, so their versions remain fixed to avoid unplanned authentication breakage.
 - Headscale is pinned because its newest release may be incompatible with the latest Headplane release.
 - Every Rybbit container is pinned, as are its ClickHouse, PostgreSQL, and Redis dependencies. When Rybbit publishes a new release, use the [`update-rybbit` skill](vps1/services/rootless/rybbit/update-rybbit/SKILL.md) to review the upstream changes and update all containers together.
 
+</details>
+
 ## Raspberry Pi EEPROM update
+
+<details>
 
 The Pi's EEPROM must try USB before microSD and enable partition walking so that it can find EDK2 on the FCOS SSD. If it is not already configured this way, update the EEPROM. The following script creates `isos/rpi4-eeprom.iso` with the required settings:
 ```bash
@@ -159,3 +170,5 @@ sudo dd if=isos/rpi4-eeprom.iso of=/dev/sdX bs=4M status=progress conv=fsync
 Power off the Pi, connect only this USB drive, and power it on. Wait at least two minutes, then power it off and remove the drive.
 
 If USB self-update is disabled in the existing EEPROM, use an official microSD recovery image instead.
+
+</details>
