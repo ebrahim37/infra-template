@@ -16,16 +16,8 @@ Tmpfs=/tmp
 NoNewPrivileges=true
 DropCapability=all
 Environment=TZ=America/Toronto
-Environment=RUST_LOG=info
 Environment=DEVICE_TOKEN={{ vps1.priv_watch_device_token }}
-# On-demand map data: Geofabrik extracts and the areas built from them (~100 km around
-# where the watch is), in a 10 GB ring cache shared read-only with watch-tiles/watch-osrm.
-Environment=MAPCACHE_DIR=/mapcache
-Environment=MAPCACHE_MAX_GB=10
-Environment=MAP_AREA_KM=100
-Environment=JAVA_OPTS=-Xmx3g
 Environment=TILE_URL_TEMPLATE=http://169.254.1.3:47914/styles/basic-preview/{z}/{x}/{y}.png
-Environment=TILE_RECOLOR=dark-heuristic
 Environment=OSRM_URL_FOOT=http://169.254.1.3:47915
 Environment=OSRM_URL_BICYCLE=http://169.254.1.3:47916
 Environment=OSRM_URL_DRIVING=http://169.254.1.3:47917
