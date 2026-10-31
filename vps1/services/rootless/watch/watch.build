@@ -1,0 +1,15 @@
+[Unit]
+Description=Build smartwatch VPS helper image
+
+[Build]
+ImageTag=localhost/sw-helper:latest
+File=./Containerfile
+SetWorkingDirectory=unit
+Pull=newer
+
+[Service]
+# release build of the Rust helper from source
+TimeoutStartSec=45min
+
+[Install]
+WantedBy=default.target

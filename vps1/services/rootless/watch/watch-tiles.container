@@ -1,0 +1,26 @@
+[Unit]
+Description=Smartwatch map tiles (renders the helper's vector tiles to PNG)
+
+[Container]
+ContainerName=watch-tiles
+Image=docker.io/maptiler/tileserver-gl:v5.6.0
+PublishPort=127.0.0.1:47914:8080
+UserNS=keep-id
+User=1000:1000
+ReadOnly=true
+Tmpfs=/tmp
+NoNewPrivileges=true
+DropCapability=all
+Entrypoint=/bin/sh
+Exec=/usr/local/bin/tiles-run
+Volume=./tiles-run.sh:/usr/local/bin/tiles-run:ro,Z
+Volume=/home/core/infra-template/vps1/volumes/watch-mapcache:/mapcache:ro,z
+
+[Service]
+TimeoutStartSec=15min
+Restart=always
+RestartSec=10s
+ExecStartPre=/usr/bin/mkdir -p /home/core/infra-template/vps1/volumes/watch-mapcache
+
+[Install]
+WantedBy=default.target

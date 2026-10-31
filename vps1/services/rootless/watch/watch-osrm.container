@@ -1,0 +1,27 @@
+[Unit]
+Description=Smartwatch routing (OSRM foot, bicycle and car)
+
+[Container]
+ContainerName=watch-osrm
+Image=ghcr.io/project-osrm/osrm-backend:v26.9.0-debian
+PublishPort=127.0.0.1:47915:5001
+PublishPort=127.0.0.1:47916:5002
+PublishPort=127.0.0.1:47917:5003
+UserNS=keep-id
+User=1000:1000
+ReadOnly=true
+NoNewPrivileges=true
+DropCapability=all
+Entrypoint=/bin/sh
+Exec=/usr/local/bin/osrm-run
+Volume=./osrm-run.sh:/usr/local/bin/osrm-run:ro,Z
+Volume=/home/core/infra-template/vps1/volumes/watch-mapcache:/mapcache:ro,z
+
+[Service]
+TimeoutStartSec=15min
+Restart=always
+RestartSec=10s
+ExecStartPre=/usr/bin/mkdir -p /home/core/infra-template/vps1/volumes/watch-mapcache
+
+[Install]
+WantedBy=default.target

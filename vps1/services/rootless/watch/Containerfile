@@ -1,0 +1,25 @@
+# Smartwatch VPS helper (weather, maps, routing, search for the watch companion), built from
+# the esp32-smartwatch repo: https://github.com/ebrahim37/esp32-smartwatch
+# The runtime image also carries the map build tools the helper runs on demand: osmium
+# (clipping Geofabrik extracts), OSRM (routing graphs) and Planetiler (vector tiles).
+FROM docker.io/library/rust:1-bookworm AS build
+ARG REF=main
+# Fetched on every build; its content changes when the branch moves, which invalidates the
+# cached clone below so a rebuild picks up new commits.
+ADD https://api.github.com/repos/ebrahim37/esp32-smartwatch/commits/${REF} /tmp/ref.json
+RUN git clone --depth 1 --branch "${REF}" https://github.com/ebrahim37/esp32-smartwatch.git /src
+WORKDIR /src/server
+RUN cargo build --release --locked
+
+FROM ghcr.io/project-osrm/osrm-backend:v26.9.0-debian
+ARG PLANETILER_VERSION=v0.10.2
+ARG PLANETILER_SHA256=f310bd0413e2e4512b27f4046d418664e8e1d3bf31603c2a70e23de06c167e4d
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates curl osmium-tool openjdk-21-jre-headless \
+    && rm -rf /var/lib/apt/lists/* \
+    && curl -fsSL -o /opt/planetiler.jar "https://github.com/onthegomap/planetiler/releases/download/${PLANETILER_VERSION}/planetiler.jar" \
+    && echo "${PLANETILER_SHA256}  /opt/planetiler.jar" | sha256sum -c -
+COPY --from=build /src/server/target/release/sw-helper /usr/local/bin/sw-helper
+ENV DATA_DIR=/data BIND_ADDR=0.0.0.0:8080 RUST_LOG=info OSRM_PROFILES_DIR=/opt PLANETILER_JAR=/opt/planetiler.jar
+EXPOSE 8080
+ENTRYPOINT ["/usr/local/bin/sw-helper"]

@@ -109,6 +109,24 @@ http://headscale.{$BASE_DOMAIN} {
 	@convertx host convertx.{$BASE_DOMAIN}
 	import protected @convertx 169.254.1.3:58321
 
+	@watch host watch.{$BASE_DOMAIN}
+	reverse_proxy @watch 169.254.1.3:47913
+
+	@ntfy-watch host ntfy-watch.{$BASE_DOMAIN}
+	route @ntfy-watch {
+		@ntfy-watch-sub header Auth {env.NTFY_WATCH_AUTH_TOKEN}
+		handle @ntfy-watch-sub {
+			reverse_proxy 100.64.0.1:2586 {
+				header_up -Auth
+				# stream each message as ntfy writes it
+				flush_interval -1
+			}
+		}
+		handle {
+			respond 401
+		}
+	}
+
 	@beszel host beszel.{$BASE_DOMAIN}
 	reverse_proxy @beszel 169.254.1.3:58090
 
