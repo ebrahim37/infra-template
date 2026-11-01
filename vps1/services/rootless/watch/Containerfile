@@ -4,9 +4,10 @@
 # (clipping Geofabrik extracts), OSRM (routing graphs) and Planetiler (vector tiles).
 FROM docker.io/library/rust:1-bookworm AS build
 ARG REF=main
-# Fetched on every build; its content changes when the branch moves, which invalidates the
-# cached clone below so a rebuild picks up new commits.
-ADD https://api.github.com/repos/ebrahim37/esp32-smartwatch/commits/${REF} /tmp/ref.json
+# The repo's ref advertisement (git smart HTTP, not the rate-limited REST API) is fetched on
+# every build; it changes when a branch moves, which invalidates the cached clone below so a
+# rebuild picks up new commits.
+ADD https://github.com/ebrahim37/esp32-smartwatch.git/info/refs?service=git-upload-pack /tmp/refs
 RUN git clone --depth 1 --branch "${REF}" https://github.com/ebrahim37/esp32-smartwatch.git /src
 WORKDIR /src/server
 RUN cargo build --release --locked
