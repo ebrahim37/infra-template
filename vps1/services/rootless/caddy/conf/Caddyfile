@@ -121,6 +121,14 @@ http://headscale.{$BASE_DOMAIN} {
 		flush_interval -1 # stream each message as ntfy writes it
 	}
 
+	@navidrome-watch {
+		host navidrome-watch.{$BASE_DOMAIN}
+		header auth {env.NAVIDROME_WATCH_TOKEN}
+	}
+	reverse_proxy @navidrome-watch 100.64.0.2:4533 {
+		header_up -auth
+	}
+
 	@beszel host beszel.{$BASE_DOMAIN}
 	reverse_proxy @beszel 169.254.1.3:58090
 
