@@ -1,0 +1,60 @@
+{
+  "model": "opus",
+  "statusLine": {
+    "type": "command",
+    "command": "bash /home/ebrahim/.config/claude/statusline-command.sh"
+  },
+  "syntaxHighlightingDisabled": false,
+  "modelSettings": {
+    "claude-opus-5-5": {
+      "effortLevel": "medium",
+      "autoCompactWindow": 500000
+    }
+  },
+  "timeFormat": "12-hour",
+  "skipDangerousModePermissionPrompt": true,
+  "theme": "auto",
+  "preferredNotifChannel": "auto",
+  "autoContinueAtUsageLimit": true,
+  "inputNeededNotifEnabled": true,
+  "env": {
+    "DISABLE_AUTOUPDATER": "1"
+  },
+  "hooks": {
+    "PermissionRequest": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /home/ebrahim/.config/claude/hooks/ntfy-attention.sh",
+            "async": true
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "AskUserQuestion|ExitPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /home/ebrahim/.config/claude/hooks/ntfy-attention.sh",
+            "async": true
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "idle_prompt|elicitation_dialog",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /home/ebrahim/.config/claude/hooks/ntfy-attention.sh",
+            "async": true
+          }
+        ]
+      }
+    ]
+  }
+}

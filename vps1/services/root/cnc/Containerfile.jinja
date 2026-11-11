@@ -8,6 +8,7 @@ RUN pacman -Syu --noconfirm --needed \
 	croc \
 	eza \
 	git \
+	jq \
 	less \
 	ncdu \
 	neovim \
@@ -81,7 +82,7 @@ RUN git clone --depth=1 https://aur.archlinux.org/yay-bin.git /tmp/yay-bin \
 	&& su - ebrahim -c 'cd /tmp/yay-bin && makepkg -i --noconfirm --cleanbuild --clean' \
 	&& rm -rf /tmp/yay-bin \
 	&& su - ebrahim -c '/home/ebrahim/scripts/ya -Yc --noconfirm && /home/ebrahim/scripts/ya -Scc --noconfirm' \
-	&& su - ebrahim -c 'PNPM_HOME=/home/ebrahim/.local/share/pnpm PATH=/home/ebrahim/.local/share/pnpm/bin:/usr/bin pnpm add --global @openai/codex http-server'
+	&& su - ebrahim -c 'PNPM_HOME=/home/ebrahim/.local/share/pnpm PATH=/home/ebrahim/.local/share/pnpm/bin:/usr/bin pnpm add --global --allow-build=@anthropic-ai/claude-code @openai/codex @anthropic-ai/claude-code http-server'
 
 RUN case "$(uname -m)" in \
 		x86_64|amd64) omp_arch=x64 ;; \

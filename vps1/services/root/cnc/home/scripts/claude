@@ -1,0 +1,11 @@
+#!/bin/sh
+set -eu
+
+mkdir -p /data/claude
+if [ ! -e /data/claude/settings.json ] && [ ! -L /data/claude/settings.json ]; then
+	ln -s "$HOME/.config/claude/settings.json" /data/claude/settings.json
+fi
+
+export CLAUDE_CONFIG_DIR="/data/claude"
+export DISABLE_AUTOUPDATER=1
+exec "$HOME/.local/share/pnpm/bin/claude" "$@"

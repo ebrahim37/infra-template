@@ -31,6 +31,7 @@ These services run on all hosts:
   - `http` and `phttp`: Run [http-server](https://www.npmjs.com/package/http-server) on a given port. `phttp` listens only on the Tailscale interface. On `vps1`, `https` and `phttps` are available which use Caddy's SSL certificate.
   - `btop`: Wrap [btop](https://github.com/aristocratos/btop) to include host processes.
   - `codex` and `omp`: Wrap Codex and Oh My Pi, storing their data under `/data` so sessions and authentication survive container rebuilds.
+  - `claude`: On `vps1`, wraps Claude Code with `CLAUDE_CONFIG_DIR=/data/claude`. Its settings, status line, and ntfy attention hook live in `~/.config/claude/` and `settings.json` is symlinked into `/data/claude` on first run.
   - `npm`, `vi`, `svi`, `nvi`, `snvi`, and `ya`: Wrap npm, Vim, Neovim, and yay to prevent them from polluting `$HOME`. `svi` and `snvi` run Vim and Neovim as `root`.
   - Aliases `sc`/`jc` and `hsc`/`hjc`: Run `systemctl --user` and `journalctl --user -u`, respectively. The `h` variants run on the CoreOS host.
   - Aliases `ssc`/`jjc` and `hssc`/`hjjc`: Run `sudo systemctl` and `journalctl -u`, respectively. The `h` variants run on the CoreOS host.
