@@ -1,0 +1,7 @@
+#!/bin/sh
+PORT=$1
+shift
+exec sudo "$HOME/.local/share/pnpm/bin/http-server" "$@" \
+	-p "$PORT" \
+	--log-ip \
+	--robots
