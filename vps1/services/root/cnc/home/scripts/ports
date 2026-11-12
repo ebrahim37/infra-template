@@ -1,10 +1,3 @@
 #!/bin/sh
 
-pasta_pid=$(run-host-root pgrep -f '/usr/bin/[p]asta .*13000-15999' | head -n 1)
-
-if [ -z "$pasta_pid" ]; then
-	exec run-host-root ss -lntup
-fi
-
-run-host-root ss -lntup |
-	awk -v process="pid=$pasta_pid," 'NR == 1 || index($0, process) == 0'
+exec run-host-root ss -lntup
